@@ -7,7 +7,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <p className="text-xl font-bold tracking-[0.12em]">ALUFEFA</p>
-            <p className="text-xs font-bold tracking-[0.18em] uppercase text-white/40 mt-0.5">
+            <p className="text-xs font-bold tracking-[0.18em] uppercase text-white mt-0.5">
               Downloadcenter
             </p>
           </div>

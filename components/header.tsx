@@ -19,7 +19,7 @@ export async function Header() {
           <span className="text-[1.45rem] font-bold tracking-[0.12em] text-white leading-none">
             ALUFEFA
           </span>
-          <span className="hidden sm:inline text-[0.7rem] font-bold tracking-[0.18em] uppercase text-white/40 leading-none">
+          <span className="hidden sm:inline text-[0.7rem] font-bold tracking-[0.18em] uppercase text-white leading-none">
             Downloadcenter
           </span>
         </Link>
