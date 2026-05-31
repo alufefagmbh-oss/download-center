@@ -1,26 +1,94 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ── ALUFEFA Corporate Font ─────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Arial Nova Cond';
+  font-weight: 400;
+  font-style: normal;
+  src: local('Arial Nova Cond'), local('Arial Nova Condensed'), local('ArialNovaCond');
+}
+@font-face {
+  font-family: 'Arial Nova Cond';
+  font-weight: 700;
+  font-style: normal;
+  src: local('Arial Nova Cond Bold'), local('Arial Nova Condensed Bold'), local('ArialNovaCondBold');
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── ALUFEFA Design Tokens ──────────────────────────────────────────────── */
+@theme {
+  --color-brand-blue:       #285598;
+  --color-brand-gray:       #555555;
+  --color-brand-light-gray: #D5D5D5;
+  --color-brand-dark-blue:  #173259;
+  --color-brand-dark-gray:  #262626;
+  --color-brand-surface:    #F5F6F8;
+
+  --font-sans: 'Arial Nova Cond', 'Arial Narrow', Arial, sans-serif;
+
+  --shadow-card: 0 2px 12px 0 rgba(23,50,89,0.10);
+  --shadow-card-hover: 0 8px 32px 0 rgba(23,50,89,0.18);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ── Base ───────────────────────────────────────────────────────────────── */
+html, body { height: 100%; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Arial Nova Cond', 'Arial Narrow', Arial, sans-serif;
+  color: #555555;
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: #262626;
+}
+
+/* ── Page wrapper helper ────────────────────────────────────────────────── */
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Section label ──────────────────────────────────────────────────────── */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #285598;
+  margin-bottom: 2rem;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #D5D5D5;
+}
+
+/* ── Card hover ─────────────────────────────────────────────────────────── */
+.alufefa-card {
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+.alufefa-card img {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.alufefa-card:hover img {
+  transform: scale(1.04);
+}
+
+/* ── UploadThing overrides ──────────────────────────────────────────────── */
+.ut-button {
+  background-color: #285598 !important;
+  font-family: 'Arial Nova Cond', 'Arial Narrow', Arial, sans-serif !important;
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+}
+.ut-button:hover { background-color: #173259 !important; }
+.ut-label { font-family: inherit !important; }
