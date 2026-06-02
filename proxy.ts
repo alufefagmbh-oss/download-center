@@ -27,7 +27,7 @@ export default clerkMiddleware(async (auth, request) => {
     const meta = sessionClaims?.publicMetadata as Record<string, unknown> | undefined
     const isAdmin = meta?.role === 'admin'
     // Cookie wird direkt nach dem Onboarding gesetzt → kein JWT-Timing-Problem
-    const cookieDone = request.cookies.get('onboarding_done')?.value === '1'
+    const cookieDone = request.cookies.get('onboarding_done')?.value === userId
 
     if (!isAdmin && !cookieDone && meta?.onboardingComplete !== true) {
       return NextResponse.redirect(new URL('/onboarding', request.url))

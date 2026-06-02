@@ -48,7 +48,7 @@ export async function completeOnboarding(
 
   // Cookie sofort setzen, damit Middleware nicht auf JWT-Refresh wartet
   const cookieStore = await cookies()
-  cookieStore.set('onboarding_done', '1', {
+  cookieStore.set('onboarding_done', userId, {
     httpOnly: true,
     path: '/',
     maxAge: 60 * 60 * 24 * 365,
