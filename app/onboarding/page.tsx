@@ -8,11 +8,18 @@ export default async function OnboardingPage() {
 
   const user = await currentUser()
   const meta = user?.publicMetadata as Record<string, unknown> | undefined
-  if (meta?.onboardingComplete === true) redirect('/')
+
+  // Admin: kein Onboarding nötig → Cookie setzen + weiterleiten (bricht Loop)
+  if (meta?.role === 'admin') {
+    redirect('/api/onboarding-done?next=/admin')
+  }
+
+  // Bereits abgeschlossen → Cookie setzen + weiterleiten (bricht Loop falls Cookie fehlt)
+  if (meta?.onboardingComplete === true) {
+    redirect('/api/onboarding-done')
+  }
 
   const saved = user?.privateMetadata as Record<string, string> | undefined
-
-  // Name aus Clerk-Profil vorausfüllen falls noch nicht im Onboarding gespeichert
   const defaultName =
     saved?.name ||
     `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim()
