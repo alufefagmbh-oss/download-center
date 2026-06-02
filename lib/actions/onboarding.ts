@@ -7,6 +7,7 @@ import { z } from 'zod'
 import type { ActionState } from '@/lib/types'
 
 const OnboardingSchema = z.object({
+  name: z.string().min(1, 'Name ist erforderlich'),
   firma: z.string().min(1, 'Firma ist erforderlich'),
   position: z.string().min(1, 'Position ist erforderlich'),
   uid: z.string().optional(),
@@ -21,6 +22,7 @@ export async function completeOnboarding(
   if (!userId) redirect('/sign-in')
 
   const raw = {
+    name: formData.get('name') as string,
     firma: formData.get('firma') as string,
     position: formData.get('position') as string,
     uid: (formData.get('uid') as string) || undefined,
@@ -36,6 +38,7 @@ export async function completeOnboarding(
   await client.users.updateUserMetadata(userId, {
     publicMetadata: { onboardingComplete: true },
     privateMetadata: {
+      name: result.data.name,
       firma: result.data.firma,
       position: result.data.position,
       uid: result.data.uid ?? '',

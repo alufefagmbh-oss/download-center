@@ -12,6 +12,11 @@ export default async function OnboardingPage() {
 
   const saved = user?.privateMetadata as Record<string, string> | undefined
 
+  // Name aus Clerk-Profil vorausfüllen falls noch nicht im Onboarding gespeichert
+  const defaultName =
+    saved?.name ||
+    `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim()
+
   return (
     <div className="min-h-screen bg-brand-dark-blue flex flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
@@ -26,7 +31,7 @@ export default async function OnboardingPage() {
         </div>
 
         <div className="bg-white p-8">
-          <OnboardingForm defaults={saved} />
+          <OnboardingForm defaults={{ ...saved, name: defaultName }} />
         </div>
       </div>
     </div>

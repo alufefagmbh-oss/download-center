@@ -28,15 +28,15 @@ export async function GET(
 
   const productType = download.product_type as { name: string; manufacturer: { name: string } } | null
   const email = user?.emailAddresses[0]?.emailAddress ?? ''
-  const userName = `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim()
   const meta = user?.privateMetadata as Record<string, string> | undefined
-  const userCompany = meta?.firma ?? ''
 
   await supabaseAdmin.from('download_logs').insert({
     user_id: userId,
     user_email: email,
-    user_name: userName,
-    user_company: userCompany,
+    user_name: meta?.name || `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim(),
+    user_company: meta?.firma ?? '',
+    user_phone: meta?.telefon ?? '',
+    user_position: meta?.position ?? '',
     download_id: id,
     download_name: download.name,
     manufacturer_name: productType?.manufacturer?.name ?? '',

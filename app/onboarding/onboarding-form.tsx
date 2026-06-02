@@ -23,6 +23,20 @@ export function OnboardingForm({ defaults }: OnboardingFormProps) {
       )}
 
       <div>
+        <Label htmlFor="name">Name *</Label>
+        <Input
+          id="name"
+          name="name"
+          defaultValue={defaults?.name ?? ''}
+          placeholder="Max Mustermann"
+          required
+        />
+        {state?.errors?.name && (
+          <p className="mt-1 text-xs text-red-600">{state.errors.name[0]}</p>
+        )}
+      </div>
+
+      <div>
         <Label htmlFor="firma">Firma *</Label>
         <Input
           id="firma"
@@ -57,16 +71,6 @@ export function OnboardingForm({ defaults }: OnboardingFormProps) {
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="uid">UID-Nummer</Label>
-            <Input
-              id="uid"
-              name="uid"
-              defaultValue={defaults?.uid ?? ''}
-              placeholder="ATU12345678"
-            />
-          </div>
-
-          <div>
             <Label htmlFor="telefon">Telefonnummer</Label>
             <Input
               id="telefon"
@@ -74,6 +78,16 @@ export function OnboardingForm({ defaults }: OnboardingFormProps) {
               type="tel"
               defaultValue={defaults?.telefon ?? ''}
               placeholder="+43 1 234 5678"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="uid">UID-Nummer</Label>
+            <Input
+              id="uid"
+              name="uid"
+              defaultValue={defaults?.uid ?? ''}
+              placeholder="ATU12345678"
             />
           </div>
         </div>

@@ -36,6 +36,8 @@ export interface DownloadLog {
   user_email: string
   user_name: string
   user_company: string
+  user_phone: string
+  user_position: string
   download_id: string | null
   download_name: string
   manufacturer_name: string
