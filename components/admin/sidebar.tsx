@@ -1,13 +1,14 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Building2, Package, LogOut } from 'lucide-react'
+import { LayoutDashboard, Building2, FileText, LogOut } from 'lucide-react'
 import { SignOutButton } from '@clerk/nextjs'
 import { cn } from '@/lib/utils'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/manufacturers', label: 'Hersteller', icon: Building2, exact: false },
+  { href: '/admin/logs', label: 'Download-Logs', icon: FileText, exact: false },
 ]
 
 export function AdminSidebar() {

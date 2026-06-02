@@ -1,9 +1,14 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil } from 'lucide-react'
 import { supabaseAdmin } from '@/lib/supabase'
 import { DeleteButton } from '@/components/admin/delete-button'
 import { deleteManufacturer } from '@/lib/actions/manufacturers'
+import { MANUFACTURER_CATEGORIES } from '@/lib/types'
+
+const categoryLabel = Object.fromEntries(
+  MANUFACTURER_CATEGORIES.map(({ value, label }) => [value, label])
+) as Record<string, string>
 
 export default async function ManufacturersAdminPage() {
   const { data: manufacturers } = await supabaseAdmin
@@ -44,7 +49,7 @@ export default async function ManufacturersAdminPage() {
               <tr className="bg-brand-dark-gray text-white text-left">
                 <th className="px-5 py-3 font-bold w-16">Bild</th>
                 <th className="px-5 py-3 font-bold">Name</th>
-                <th className="px-5 py-3 font-bold w-40">Slug</th>
+                <th className="px-5 py-3 font-bold w-48">Kategorie</th>
                 <th className="px-5 py-3 font-bold w-36 text-right">Aktionen</th>
               </tr>
             </thead>
@@ -67,7 +72,9 @@ export default async function ManufacturersAdminPage() {
                       {m.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 text-brand-gray font-mono text-xs">{m.slug}</td>
+                  <td className="px-5 py-3 text-brand-gray text-xs">
+                    {categoryLabel[(m as Record<string, string>).category ?? 'sonstige'] ?? 'Sonstige Dateien'}
+                  </td>
                   <td className="px-5 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Link

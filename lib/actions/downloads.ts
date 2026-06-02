@@ -9,6 +9,7 @@ import type { ActionState } from '@/lib/types'
 const DownloadSchema = z.object({
   name: z.string().min(1, 'Name ist erforderlich').max(200),
   file_url: z.string().url('Datei-URL ist erforderlich'),
+  original_filename: z.string().default(''),
   file_type: z.string().min(1, 'Dateityp ist erforderlich'),
   file_size: z.string().min(1, 'Dateigröße ist erforderlich'),
   version: z.string().min(1, 'Version ist erforderlich').max(50),
@@ -33,6 +34,7 @@ export async function createDownload(
   const raw = {
     name: formData.get('name') as string,
     file_url: formData.get('file_url') as string,
+    original_filename: (formData.get('original_filename') as string) || '',
     file_type: formData.get('file_type') as string,
     file_size: formData.get('file_size') as string,
     version: formData.get('version') as string,
@@ -67,6 +69,7 @@ export async function updateDownload(
   const raw = {
     name: formData.get('name') as string,
     file_url: formData.get('file_url') as string,
+    original_filename: (formData.get('original_filename') as string) || '',
     file_type: formData.get('file_type') as string,
     file_size: formData.get('file_size') as string,
     version: formData.get('version') as string,
@@ -102,34 +105,4 @@ export async function deleteDownload(
   revalidatePath('/')
   revalidatePath(`/admin/manufacturers/${manufacturerId}/products/${productTypeId}`)
   redirect(`/admin/manufacturers/${manufacturerId}/products/${productTypeId}`)
-}
-
-export async function logAndGetDownloadUrl(downloadId: string): Promise<{ url?: string; error?: string }> {
-  const { userId } = await auth()
-  if (!userId) return { error: 'Nicht angemeldet' }
-
-  const [user, { data: download, error: fetchError }] = await Promise.all([
-    currentUser(),
-    supabaseAdmin
-      .from('downloads')
-      .select('*, product_type:product_types(name, manufacturer:manufacturers(name))')
-      .eq('id', downloadId)
-      .single(),
-  ])
-
-  if (fetchError || !download) return { error: 'Datei nicht gefunden' }
-
-  const productType = download.product_type as { name: string; manufacturer: { name: string } } | null
-  const email = user?.emailAddresses[0]?.emailAddress ?? ''
-
-  await supabaseAdmin.from('download_logs').insert({
-    user_id: userId,
-    user_email: email,
-    download_id: downloadId,
-    download_name: download.name,
-    manufacturer_name: productType?.manufacturer?.name ?? '',
-    product_name: productType?.name ?? '',
-  })
-
-  return { url: download.file_url }
 }

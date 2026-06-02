@@ -9,6 +9,9 @@ import type { ActionState } from '@/lib/types'
 
 const ManufacturerSchema = z.object({
   name: z.string().min(1, 'Name ist erforderlich').max(100),
+  category: z.enum(['alufefa', 'partner', 'sonstige'], {
+    message: 'Kategorie auswählen',
+  }),
   image_url: z.string().url('Ungültige Bild-URL').optional().or(z.literal('')),
 })
 
@@ -28,6 +31,7 @@ export async function createManufacturer(
 
   const raw = {
     name: formData.get('name') as string,
+    category: formData.get('category') as string,
     image_url: formData.get('image_url') as string,
   }
 
@@ -41,6 +45,7 @@ export async function createManufacturer(
   const { error } = await supabaseAdmin.from('manufacturers').insert({
     name: result.data.name,
     slug,
+    category: result.data.category,
     image_url: result.data.image_url || null,
   })
 
@@ -65,6 +70,7 @@ export async function updateManufacturer(
 
   const raw = {
     name: formData.get('name') as string,
+    category: formData.get('category') as string,
     image_url: formData.get('image_url') as string,
   }
 
@@ -86,6 +92,7 @@ export async function updateManufacturer(
     .update({
       name: result.data.name,
       slug,
+      category: result.data.category,
       image_url: result.data.image_url || null,
     })
     .eq('id', id)

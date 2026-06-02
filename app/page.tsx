@@ -2,6 +2,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { ManufacturerCard } from '@/components/manufacturer-card'
 import { supabase } from '@/lib/supabase'
+import { MANUFACTURER_CATEGORIES } from '@/lib/types'
 
 export const revalidate = 60
 
@@ -11,6 +12,15 @@ export default async function HomePage() {
     .select('*')
     .order('name')
 
+  const grouped = Object.fromEntries(
+    MANUFACTURER_CATEGORIES.map(({ value }) => [
+      value,
+      manufacturers?.filter((m) => (m.category ?? 'sonstige') === value) ?? [],
+    ])
+  )
+
+  const hasAny = manufacturers && manufacturers.length > 0
+
   return (
     <div className="page-shell">
       <Header />
@@ -18,8 +28,13 @@ export default async function HomePage() {
       <main className="flex-1">
         {/* Hero */}
         <section className="relative bg-brand-dark-blue overflow-hidden">
-          <div className="absolute inset-0 opacity-5"
-            style={{ backgroundImage: 'repeating-linear-gradient(45deg, #ffffff 0, #ffffff 1px, transparent 0, transparent 50%)', backgroundSize: '24px 24px' }}
+          <div
+            className="absolute inset-0 opacity-5"
+            style={{
+              backgroundImage:
+                'repeating-linear-gradient(45deg, #ffffff 0, #ffffff 1px, transparent 0, transparent 50%)',
+              backgroundSize: '24px 24px',
+            }}
           />
           <div className="relative max-w-7xl mx-auto px-6 py-16 sm:py-20">
             <p className="text-xs font-bold tracking-[0.25em] uppercase text-brand-blue/80 mb-3">
@@ -34,22 +49,29 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Manufacturers */}
-        <section className="max-w-7xl mx-auto px-6 py-14">
-          <p className="section-label">Hersteller</p>
-
-          {!manufacturers || manufacturers.length === 0 ? (
+        {/* Content */}
+        <div className="max-w-7xl mx-auto px-6 py-14 space-y-14">
+          {!hasAny ? (
             <div className="text-center py-24">
               <p className="text-brand-gray">Noch keine Hersteller vorhanden.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {manufacturers.map((m) => (
-                <ManufacturerCard key={m.id} manufacturer={m} />
-              ))}
-            </div>
+            MANUFACTURER_CATEGORIES.map(({ value, label }) => {
+              const items = grouped[value]
+              if (!items || items.length === 0) return null
+              return (
+                <section key={value}>
+                  <p className="section-label mb-6">{label}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {items.map((m) => (
+                      <ManufacturerCard key={m.id} manufacturer={m} />
+                    ))}
+                  </div>
+                </section>
+              )
+            })
           )}
-        </section>
+        </div>
       </main>
 
       <Footer />

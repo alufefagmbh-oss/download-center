@@ -1,7 +1,4 @@
-'use client'
-import { useState } from 'react'
-import { Download, FileText, AlertCircle, Lock } from 'lucide-react'
-import { logAndGetDownloadUrl } from '@/lib/actions/downloads'
+import { Download, FileText, Lock } from 'lucide-react'
 import type { Download as DownloadType } from '@/lib/types'
 
 interface DownloadCatalogProps {
@@ -10,23 +7,6 @@ interface DownloadCatalogProps {
 }
 
 export function DownloadCatalog({ downloads, isLoggedIn }: DownloadCatalogProps) {
-  const [loading, setLoading] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  async function handleDownload(id: string) {
-    setError(null)
-    setLoading(id)
-    try {
-      const result = await logAndGetDownloadUrl(id)
-      if (result.error) setError(result.error)
-      else if (result.url) window.open(result.url, '_blank', 'noopener,noreferrer')
-    } catch {
-      setError('Fehler beim Herunterladen')
-    } finally {
-      setLoading(null)
-    }
-  }
-
   if (downloads.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-brand-gray/50">
@@ -38,13 +18,6 @@ export function DownloadCatalog({ downloads, isLoggedIn }: DownloadCatalogProps)
 
   return (
     <div className="space-y-4">
-      {error && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
-          <AlertCircle size={15} />
-          {error}
-        </div>
-      )}
-
       {!isLoggedIn && (
         <div className="flex items-center gap-3 bg-brand-dark-blue/5 border border-brand-dark-blue/15 px-5 py-4">
           <Lock size={15} className="text-brand-blue shrink-0" />
@@ -79,14 +52,13 @@ export function DownloadCatalog({ downloads, isLoggedIn }: DownloadCatalogProps)
                 <td className="py-4 pr-4 text-brand-gray">{dl.version}</td>
                 <td className="py-4 text-right">
                   {isLoggedIn ? (
-                    <button
-                      onClick={() => handleDownload(dl.id)}
-                      disabled={loading === dl.id}
-                      className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold px-4 py-2 transition-colors disabled:opacity-50"
+                    <a
+                      href={`/api/download/${dl.id}`}
+                      className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold px-4 py-2 transition-colors"
                     >
                       <Download size={12} />
-                      {loading === dl.id ? 'Lädt…' : 'Download'}
-                    </button>
+                      Download
+                    </a>
                   ) : (
                     <span className="text-xs text-brand-gray/50 italic">Anmeldung nötig</span>
                   )}
@@ -108,14 +80,13 @@ export function DownloadCatalog({ downloads, isLoggedIn }: DownloadCatalogProps)
               <span className="text-xs text-brand-gray">{dl.version}</span>
             </div>
             {isLoggedIn ? (
-              <button
-                onClick={() => handleDownload(dl.id)}
-                disabled={loading === dl.id}
-                className="w-full flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold py-2.5 transition-colors disabled:opacity-50"
+              <a
+                href={`/api/download/${dl.id}`}
+                className="w-full flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold py-2.5 transition-colors"
               >
                 <Download size={12} />
-                {loading === dl.id ? 'Lädt…' : 'Herunterladen'}
-              </button>
+                Herunterladen
+              </a>
             ) : (
               <p className="text-xs text-brand-gray/50 italic text-center">Anmeldung erforderlich</p>
             )}

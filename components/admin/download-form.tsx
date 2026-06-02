@@ -22,7 +22,7 @@ export function DownloadForm({
   const [fileUrl, setFileUrl] = useState(defaultValues?.file_url ?? '')
   const [fileType, setFileType] = useState(defaultValues?.file_type ?? '')
   const [fileSize, setFileSize] = useState(defaultValues?.file_size ?? '')
-  const [fileName, setFileName] = useState('')
+  const [fileName, setFileName] = useState(defaultValues?.original_filename ?? '')
   const [state, formAction, pending] = useActionState(action, undefined)
 
   return (
@@ -61,6 +61,7 @@ export function DownloadForm({
         <input type="hidden" name="file_url" value={fileUrl} />
         <input type="hidden" name="file_type" value={fileType} />
         <input type="hidden" name="file_size" value={fileSize} />
+        <input type="hidden" name="original_filename" value={fileName} />
 
         {fileUrl ? (
           <div className="border border-brand-light-gray bg-gray-50 p-4 flex items-center gap-4">
@@ -81,7 +82,7 @@ export function DownloadForm({
           <div className="border-2 border-dashed border-brand-light-gray p-6 text-center bg-gray-50">
             <FileIcon className="mx-auto mb-2 text-brand-light-gray" size={32} />
             <p className="text-sm text-brand-gray mb-3">
-              PDF, Word, Excel, ZIP (max. 64 MB)
+              PDF, CAD, ZIP, DXF und weitere (max. 64 MB)
             </p>
             <UploadButton
               endpoint="fileUploader"

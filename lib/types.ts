@@ -2,6 +2,7 @@ export interface Manufacturer {
   id: string
   name: string
   slug: string
+  category: 'alufefa' | 'partner' | 'sonstige'
   image_url: string | null
   created_at: string
 }
@@ -21,6 +22,7 @@ export interface Download {
   product_type_id: string
   name: string
   file_url: string
+  original_filename: string
   file_type: string
   file_size: string
   version: string
@@ -32,6 +34,8 @@ export interface DownloadLog {
   id: string
   user_id: string
   user_email: string
+  user_name: string
+  user_company: string
   download_id: string | null
   download_name: string
   manufacturer_name: string
@@ -44,3 +48,11 @@ export type ActionState = {
   errors?: Record<string, string[] | undefined>
   success?: boolean
 }
+
+export const MANUFACTURER_CATEGORIES = [
+  { value: 'alufefa', label: 'ALUFEFA Produkte' },
+  { value: 'partner', label: 'Produkte unserer Partner' },
+  { value: 'sonstige', label: 'Sonstige Dateien' },
+] as const
+
+export type ManufacturerCategory = 'alufefa' | 'partner' | 'sonstige'

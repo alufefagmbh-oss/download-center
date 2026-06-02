@@ -19,7 +19,7 @@ export default async function AdminDashboard() {
     { label: 'Hersteller', value: manufacturerCount ?? 0, icon: Building2, href: '/admin/manufacturers' },
     { label: 'Produktarten', value: productCount ?? 0, icon: Package, href: '/admin/manufacturers' },
     { label: 'Downloads', value: downloadCount ?? 0, icon: Download, href: '/admin/manufacturers' },
-    { label: 'Download-Logs', value: logCount ?? 0, icon: FileText, href: '#' },
+    { label: 'Download-Logs', value: logCount ?? 0, icon: FileText, href: '/admin/logs' },
   ]
 
   const { data: recentLogs } = await supabaseAdmin

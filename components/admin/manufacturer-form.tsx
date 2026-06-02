@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { UploadButton } from '@/lib/uploadthing'
+import { MANUFACTURER_CATEGORIES } from '@/lib/types'
 import type { ActionState, Manufacturer } from '@/lib/types'
 
 interface ManufacturerFormProps {
@@ -24,7 +25,6 @@ export function ManufacturerForm({
 
   return (
     <form action={formAction} className="space-y-6 max-w-lg">
-      {/* Success message */}
       {state?.success && (
         <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-3">
           <CheckCircle size={16} />
@@ -32,7 +32,6 @@ export function ManufacturerForm({
         </div>
       )}
 
-      {/* Error message */}
       {state?.message && !state.success && (
         <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3">
           <AlertCircle size={16} />
@@ -52,6 +51,25 @@ export function ManufacturerForm({
         />
         {state?.errors?.name && (
           <p className="mt-1 text-xs text-red-600">{state.errors.name[0]}</p>
+        )}
+      </div>
+
+      {/* Kategorie */}
+      <div>
+        <Label htmlFor="category">Kategorie *</Label>
+        <select
+          id="category"
+          name="category"
+          defaultValue={defaultValues?.category ?? 'sonstige'}
+          required
+          className="mt-1 block w-full border border-brand-light-gray bg-white px-3 py-2 text-sm text-brand-dark-gray focus:border-brand-blue focus:outline-none"
+        >
+          {MANUFACTURER_CATEGORIES.map(({ value, label }) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+        {state?.errors?.category && (
+          <p className="mt-1 text-xs text-red-600">{state.errors.category[0]}</p>
         )}
       </div>
 
