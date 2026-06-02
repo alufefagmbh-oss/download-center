@@ -1,5 +1,6 @@
 'use server'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { z } from 'zod'
@@ -40,6 +41,16 @@ export async function completeOnboarding(
       uid: result.data.uid ?? '',
       telefon: result.data.telefon ?? '',
     },
+  })
+
+  // Cookie sofort setzen, damit Middleware nicht auf JWT-Refresh wartet
+  const cookieStore = await cookies()
+  cookieStore.set('onboarding_done', '1', {
+    httpOnly: true,
+    path: '/',
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
   })
 
   redirect('/')

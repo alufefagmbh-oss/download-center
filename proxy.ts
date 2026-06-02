@@ -3,16 +3,35 @@ import { NextResponse } from 'next/server'
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)'])
 
+const isOnboardingExempt = createRouteMatcher([
+  '/onboarding',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/api/(.*)',
+  '/admin(.*)',
+])
+
 export default clerkMiddleware(async (auth, request) => {
+  const { userId, sessionClaims } = await auth()
+
   if (isAdminRoute(request)) {
-    const { userId } = await auth()
     if (!userId) {
       const signInUrl = new URL('/sign-in', request.url)
       signInUrl.searchParams.set('redirect_url', request.nextUrl.pathname)
       return NextResponse.redirect(signInUrl)
     }
-    // Rollenprüfung (admin) erfolgt in app/admin/layout.tsx via currentUser()
-    // dort wird publicMetadata direkt von Clerk's API gelesen
+  }
+
+  // Onboarding-Pflicht für eingeloggte Nicht-Admin-User
+  if (userId && !isOnboardingExempt(request)) {
+    const meta = sessionClaims?.publicMetadata as Record<string, unknown> | undefined
+    const isAdmin = meta?.role === 'admin'
+    // Cookie wird direkt nach dem Onboarding gesetzt → kein JWT-Timing-Problem
+    const cookieDone = request.cookies.get('onboarding_done')?.value === '1'
+
+    if (!isAdmin && !cookieDone && meta?.onboardingComplete !== true) {
+      return NextResponse.redirect(new URL('/onboarding', request.url))
+    }
   }
 })
 
