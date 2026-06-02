@@ -6,6 +6,70 @@ interface DownloadCatalogProps {
   isLoggedIn: boolean
 }
 
+function DownloadAction({ dl, isLoggedIn }: { dl: DownloadType; isLoggedIn: boolean }) {
+  if (!isLoggedIn) {
+    return <span className="text-xs text-brand-gray/50 italic">Anmeldung nötig</span>
+  }
+
+  const isPdf = dl.file_type?.toUpperCase() === 'PDF'
+
+  if (isPdf) {
+    return (
+      <a
+        href={`/api/download/${dl.id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold px-4 py-2 transition-colors"
+      >
+        <FileText size={12} />
+        Öffnen
+      </a>
+    )
+  }
+
+  return (
+    <a
+      href={`/api/download/${dl.id}`}
+      className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold px-4 py-2 transition-colors"
+    >
+      <Download size={12} />
+      Download
+    </a>
+  )
+}
+
+function MobileDownloadAction({ dl, isLoggedIn }: { dl: DownloadType; isLoggedIn: boolean }) {
+  if (!isLoggedIn) {
+    return <p className="text-xs text-brand-gray/50 italic text-center">Anmeldung erforderlich</p>
+  }
+
+  const isPdf = dl.file_type?.toUpperCase() === 'PDF'
+
+  if (isPdf) {
+    return (
+      <a
+        href={`/api/download/${dl.id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold py-2.5 transition-colors"
+      >
+        <FileText size={12} />
+        PDF öffnen
+      </a>
+    )
+  }
+
+  return (
+    <a
+      href={`/api/download/${dl.id}`}
+      className="w-full flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold py-2.5 transition-colors"
+    >
+      <Download size={12} />
+      Herunterladen
+    </a>
+  )
+}
+
 export function DownloadCatalog({ downloads, isLoggedIn }: DownloadCatalogProps) {
   if (downloads.length === 0) {
     return (
@@ -51,17 +115,7 @@ export function DownloadCatalog({ downloads, isLoggedIn }: DownloadCatalogProps)
                 <td className="py-4 pr-4 text-brand-gray">{dl.file_size}</td>
                 <td className="py-4 pr-4 text-brand-gray">{dl.version}</td>
                 <td className="py-4 text-right">
-                  {isLoggedIn ? (
-                    <a
-                      href={`/api/download/${dl.id}`}
-                      className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold px-4 py-2 transition-colors"
-                    >
-                      <Download size={12} />
-                      Download
-                    </a>
-                  ) : (
-                    <span className="text-xs text-brand-gray/50 italic">Anmeldung nötig</span>
-                  )}
+                  <DownloadAction dl={dl} isLoggedIn={isLoggedIn} />
                 </td>
               </tr>
             ))}
@@ -79,17 +133,7 @@ export function DownloadCatalog({ downloads, isLoggedIn }: DownloadCatalogProps)
               <span className="text-xs text-brand-gray">{dl.file_size}</span>
               <span className="text-xs text-brand-gray">{dl.version}</span>
             </div>
-            {isLoggedIn ? (
-              <a
-                href={`/api/download/${dl.id}`}
-                className="w-full flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold py-2.5 transition-colors"
-              >
-                <Download size={12} />
-                Herunterladen
-              </a>
-            ) : (
-              <p className="text-xs text-brand-gray/50 italic text-center">Anmeldung erforderlich</p>
-            )}
+            <MobileDownloadAction dl={dl} isLoggedIn={isLoggedIn} />
           </div>
         ))}
       </div>

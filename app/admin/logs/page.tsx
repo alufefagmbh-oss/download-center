@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { Input } from '@/components/ui/input'
+import { FileDown } from 'lucide-react'
 
 interface PageProps {
   searchParams: Promise<{
@@ -31,6 +32,15 @@ export default async function LogsAdminPage({ searchParams }: PageProps) {
   const { data: logs } = await query
 
   const hasFilter = !!(params.date_from || params.date_to || params.file || params.manufacturer || params.company || params.email)
+
+  const exportParams = new URLSearchParams()
+  if (params.date_from)    exportParams.set('date_from', params.date_from)
+  if (params.date_to)      exportParams.set('date_to', params.date_to)
+  if (params.file)         exportParams.set('file', params.file)
+  if (params.manufacturer) exportParams.set('manufacturer', params.manufacturer)
+  if (params.company)      exportParams.set('company', params.company)
+  if (params.email)        exportParams.set('email', params.email)
+  const exportUrl = `/api/admin/logs-export?${exportParams.toString()}`
 
   return (
     <main className="p-8">
@@ -85,11 +95,18 @@ export default async function LogsAdminPage({ searchParams }: PageProps) {
         </div>
       </form>
 
-      <div className="mb-3">
+      <div className="mb-3 flex items-center justify-between">
         <p className="text-sm text-brand-gray">
           {logs?.length ?? 0} {hasFilter ? 'gefilterte ' : ''}Einträge
           {logs && logs.length >= 500 && ' (max. 500 angezeigt)'}
         </p>
+        <a
+          href={exportUrl}
+          className="flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white text-sm font-bold px-4 py-2 transition-colors"
+        >
+          <FileDown size={15} />
+          Excel exportieren
+        </a>
       </div>
 
       {!logs || logs.length === 0 ? (

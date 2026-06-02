@@ -104,10 +104,15 @@ export async function GET(
     fileRes.headers.get('content-type')
   )
 
+  const isPdf = download.file_type?.toUpperCase() === 'PDF'
+  const disposition = isPdf
+    ? `inline; filename*=UTF-8''${encodeURIComponent(filename)}`
+    : `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`
+
   return new NextResponse(fileRes.body, {
     headers: {
       'Content-Type': contentType,
-      'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
+      'Content-Disposition': disposition,
       'Cache-Control': 'no-store',
     },
   })
