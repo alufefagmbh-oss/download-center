@@ -2,25 +2,37 @@ import Link from 'next/link'
 import { Building2, Package, Download, FileText } from 'lucide-react'
 import { supabaseAdmin } from '@/lib/supabase'
 
+function parseBytes(size: string): number {
+  const m = size.trim().match(/^([\d.,]+)\s*(B|KB|MB|GB|TB)?$/i)
+  if (!m) return 0
+  const n = parseFloat(m[1].replace(',', '.'))
+  const u = (m[2] ?? 'B').toUpperCase()
+  const mul: Record<string, number> = { B: 1, KB: 1024, MB: 1048576, GB: 1073741824, TB: 1099511627776 }
+  return n * (mul[u] ?? 1)
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`
+  if (bytes < 1073741824) return `${(bytes / 1048576).toFixed(1)} MB`
+  return `${(bytes / 1073741824).toFixed(2)} GB`
+}
+
 export default async function AdminDashboard() {
   const [
     { count: manufacturerCount },
     { count: productCount },
-    { count: downloadCount },
+    { data: downloadRows, count: downloadCount },
     { count: logCount },
   ] = await Promise.all([
     supabaseAdmin.from('manufacturers').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('product_types').select('*', { count: 'exact', head: true }),
-    supabaseAdmin.from('downloads').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('downloads').select('file_size', { count: 'exact' }),
     supabaseAdmin.from('download_logs').select('*', { count: 'exact', head: true }),
   ])
 
-  const stats = [
-    { label: 'Hersteller', value: manufacturerCount ?? 0, icon: Building2, href: '/admin/manufacturers' },
-    { label: 'Produktarten', value: productCount ?? 0, icon: Package, href: '/admin/manufacturers' },
-    { label: 'Downloads', value: downloadCount ?? 0, icon: Download, href: '/admin/manufacturers' },
-    { label: 'Download-Logs', value: logCount ?? 0, icon: FileText, href: '/admin/logs' },
-  ]
+  const totalBytes = (downloadRows ?? []).reduce((sum, d) => sum + parseBytes(d.file_size ?? ''), 0)
+  const totalSize = formatBytes(totalBytes)
 
   const { data: recentLogs } = await supabaseAdmin
     .from('download_logs')
@@ -37,40 +49,30 @@ export default async function AdminDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-        {stats.map(({ label, value, icon: Icon, href }) => (
-          <Link
-            key={label}
-            href={href}
-            className="bg-white border border-brand-light-gray p-6 hover:border-brand-blue transition-colors group"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <Icon className="text-brand-blue group-hover:text-brand-dark-blue" size={22} />
-            </div>
-            <p className="text-3xl font-bold text-brand-dark-gray">{value}</p>
-            <p className="text-sm text-brand-gray mt-1">{label}</p>
-          </Link>
-        ))}
-      </div>
+        <Link href="/admin/manufacturers" className="bg-white border border-brand-light-gray p-6 hover:border-brand-blue transition-colors group">
+          <Building2 className="text-brand-blue group-hover:text-brand-dark-blue mb-3" size={22} />
+          <p className="text-3xl font-bold text-brand-dark-gray">{manufacturerCount ?? 0}</p>
+          <p className="text-sm text-brand-gray mt-1">Hersteller</p>
+        </Link>
 
-      {/* Quick actions */}
-      <div className="mb-10">
-        <h2 className="text-sm font-bold tracking-widest uppercase text-brand-gray mb-4 border-b border-brand-light-gray pb-2">
-          Schnellzugriff
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/admin/manufacturers/new"
-            className="bg-brand-blue text-white px-5 py-2.5 font-bold hover:bg-brand-dark-blue transition-colors text-sm"
-          >
-            + Hersteller anlegen
-          </Link>
-          <Link
-            href="/admin/manufacturers"
-            className="bg-white border border-brand-blue text-brand-blue px-5 py-2.5 font-bold hover:bg-brand-blue hover:text-white transition-colors text-sm"
-          >
-            Hersteller verwalten
-          </Link>
+        <Link href="/admin/products" className="bg-white border border-brand-light-gray p-6 hover:border-brand-blue transition-colors group">
+          <Package className="text-brand-blue group-hover:text-brand-dark-blue mb-3" size={22} />
+          <p className="text-3xl font-bold text-brand-dark-gray">{productCount ?? 0}</p>
+          <p className="text-sm text-brand-gray mt-1">Produktarten</p>
+        </Link>
+
+        <div className="bg-white border border-brand-light-gray p-6">
+          <Download className="text-brand-blue mb-3" size={22} />
+          <p className="text-3xl font-bold text-brand-dark-gray">{downloadCount ?? 0}</p>
+          <p className="text-sm text-brand-gray mt-1">Downloads</p>
+          <p className="text-xs text-brand-gray mt-0.5">{totalSize} gesamt</p>
         </div>
+
+        <Link href="/admin/logs" className="bg-white border border-brand-light-gray p-6 hover:border-brand-blue transition-colors group">
+          <FileText className="text-brand-blue group-hover:text-brand-dark-blue mb-3" size={22} />
+          <p className="text-3xl font-bold text-brand-dark-gray">{logCount ?? 0}</p>
+          <p className="text-sm text-brand-gray mt-1">Download-Logs</p>
+        </Link>
       </div>
 
       {/* Recent downloads */}
