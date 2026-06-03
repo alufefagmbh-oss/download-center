@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
 import { Globe } from 'lucide-react'
@@ -16,11 +17,17 @@ export async function Header() {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
         {/* Logo */}
-        <Link href="/" className="flex items-baseline gap-2.5 shrink-0">
-          <span className="text-[1.45rem] font-bold tracking-[0.12em] text-brand-dark-gray leading-none">
-            ALUFEFA
-          </span>
-          <span className="hidden sm:inline text-[0.7rem] font-bold tracking-[0.18em] uppercase text-brand-gray leading-none">
+        <Link href="/" className="flex items-center gap-3 shrink-0">
+          <div className="relative h-9 w-36">
+            <Image
+              src="/images/Downloads.png"
+              alt="ALUFEFA"
+              fill
+              className="object-contain object-left"
+              priority
+            />
+          </div>
+          <span className="hidden sm:inline text-[0.7rem] font-bold tracking-[0.18em] uppercase text-brand-gray leading-none border-l border-brand-light-gray pl-3">
             Downloadcenter
           </span>
         </Link>
