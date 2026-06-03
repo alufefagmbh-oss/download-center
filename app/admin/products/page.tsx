@@ -6,7 +6,7 @@ import { ProductsBoard } from '@/components/admin/products-board'
 export default async function ProductsAdminPage() {
   const [{ data: manufacturers }, { data: products }] = await Promise.all([
     supabaseAdmin.from('manufacturers').select('*').order('name'),
-    supabaseAdmin.from('product_types').select('*').order('name'),
+    supabaseAdmin.from('product_types').select('*').order('sort_order').order('name'),
   ])
 
   return (

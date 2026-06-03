@@ -13,6 +13,7 @@ export interface ProductType {
   name: string
   slug: string
   image_url: string | null
+  sort_order: number
   created_at: string
   manufacturer?: Manufacturer
 }

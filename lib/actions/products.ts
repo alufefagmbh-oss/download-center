@@ -129,3 +129,19 @@ export async function moveProduct(
   revalidatePath('/admin/products')
   return { success: true }
 }
+
+export async function reorderProducts(orderedIds: string[]): Promise<ActionState> {
+  await requireAdmin()
+
+  const updates = orderedIds.map((id, index) =>
+    supabaseAdmin.from('product_types').update({ sort_order: index }).eq('id', id)
+  )
+
+  const results = await Promise.all(updates)
+  const failed = results.find((r) => r.error)
+  if (failed?.error) return { message: 'Fehler beim Speichern der Reihenfolge' }
+
+  revalidatePath('/')
+  revalidatePath('/admin/products')
+  return { success: true }
+}
