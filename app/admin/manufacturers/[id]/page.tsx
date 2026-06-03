@@ -27,6 +27,7 @@ export default async function EditManufacturerPage({ params }: PageProps) {
     .from('product_types')
     .select('*')
     .eq('manufacturer_id', id)
+    .order('sort_order')
     .order('name')
 
   const updateAction = updateManufacturer.bind(null, id)

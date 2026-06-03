@@ -28,6 +28,7 @@ export default async function ManufacturerPage({ params }: PageProps) {
     .from('product_types')
     .select('*')
     .eq('manufacturer_id', manufacturer.id)
+    .order('sort_order')
     .order('name')
 
   return (
