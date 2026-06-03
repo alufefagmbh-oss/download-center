@@ -47,7 +47,7 @@ export async function Header() {
                 className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-brand-gray hover:text-brand-dark-gray transition-colors"
               >
                 <ArrowLeft size={13} />
-                Zurück
+                Zurück zur Website
               </a>
               <UserButton />
             </>
