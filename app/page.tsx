@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { ManufacturerCard } from '@/components/manufacturer-card'
@@ -27,24 +28,26 @@ export default async function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative bg-brand-dark-blue overflow-hidden">
-          <div
-            className="absolute inset-0 opacity-5"
-            style={{
-              backgroundImage:
-                'repeating-linear-gradient(45deg, #ffffff 0, #ffffff 1px, transparent 0, transparent 50%)',
-              backgroundSize: '24px 24px',
-            }}
+        <section className="relative overflow-hidden h-64 sm:h-80">
+          <Image
+            src="/images/ALUFEFA_Firmengebäude_Braunau_2.jpg"
+            alt="ALUFEFA Firmengebäude Braunau"
+            fill
+            className="object-cover object-center"
+            priority
           />
-          <div className="relative max-w-7xl mx-auto px-6 py-16 sm:py-20">
-            <p className="text-xs font-bold tracking-[0.25em] uppercase text-brand-blue/80 mb-3">
-              ALUFEFA GmbH
+          {/* Black overlay — high transparency so image stays visible */}
+          <div className="absolute inset-0 bg-black/45" />
+
+          <div className="relative h-full flex flex-col justify-center max-w-7xl mx-auto px-6">
+            <p className="text-xs font-bold tracking-[0.25em] uppercase text-white/60 mb-2">
+              ALUFEFA
             </p>
             <h1 className="text-3xl sm:text-5xl font-bold text-white tracking-wide leading-tight mb-3">
               Downloadcenter
             </h1>
-            <p className="text-white/50 text-base max-w-xl">
-              Produktkataloge, Datenblätter und technische Dokumentationen aller ALUFEFA-Hersteller.
+            <p className="text-white/70 text-base max-w-xl">
+              Produktkataloge, Datenblätter, technische Dokumentationen, CAD-Dateien und vieles mehr.
             </p>
           </div>
         </section>

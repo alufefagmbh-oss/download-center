@@ -18,10 +18,11 @@ export function ProductCard({ product, manufacturer }: { product: ProductType; m
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-blue to-brand-dark-blue" />
+        <div className="absolute inset-0 bg-brand-dark-gray" />
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/5 transition-opacity duration-300 group-hover:from-black/85" />
+      {/* Black overlay — high transparency */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent transition-opacity duration-300 group-hover:from-black/70" />
 
       <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end justify-between">
         <h2 className="text-white text-xl font-bold tracking-wide leading-tight pr-4">

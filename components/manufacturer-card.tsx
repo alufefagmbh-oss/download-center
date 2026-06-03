@@ -18,11 +18,11 @@ export function ManufacturerCard({ manufacturer }: { manufacturer: Manufacturer 
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-dark-blue to-brand-blue" />
+        <div className="absolute inset-0 bg-brand-dark-gray" />
       )}
 
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/5 transition-opacity duration-300 group-hover:from-black/85" />
+      {/* Black overlay — high transparency */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent transition-opacity duration-300 group-hover:from-black/70" />
 
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end justify-between">

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
+import { Globe } from 'lucide-react'
 
 export async function Header() {
   const { userId } = await auth()
@@ -11,41 +12,52 @@ export async function Header() {
   }
 
   return (
-    <header className="bg-brand-dark-blue">
+    <header className="bg-[#f4f4f4] shadow-[0_2px_8px_0_rgba(0,0,0,0.08)] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
         {/* Logo */}
         <Link href="/" className="flex items-baseline gap-2.5 shrink-0">
-          <span className="text-[1.45rem] font-bold tracking-[0.12em] text-white leading-none">
+          <span className="text-[1.45rem] font-bold tracking-[0.12em] text-brand-dark-gray leading-none">
             ALUFEFA
           </span>
-          <span className="hidden sm:inline text-[0.7rem] font-bold tracking-[0.18em] uppercase text-white leading-none">
+          <span className="hidden sm:inline text-[0.7rem] font-bold tracking-[0.18em] uppercase text-brand-gray leading-none">
             Downloadcenter
           </span>
         </Link>
 
         {/* Right */}
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-3">
           {isAdmin && (
             <Link
               href="/admin"
-              className="hidden sm:inline-flex items-center text-xs font-bold tracking-widest uppercase text-white/60 hover:text-white transition-colors px-3 py-1.5 border border-white/20 hover:border-white/50 mr-1"
+              className="hidden sm:inline-flex items-center text-xs font-bold tracking-widest uppercase text-brand-gray hover:text-brand-dark-gray transition-colors px-3 py-1.5 border border-brand-light-gray hover:border-brand-gray"
             >
               Admin
             </Link>
           )}
 
           {userId ? (
-            <UserButton />
+            <>
+              <a
+                href="https://www.alufefa.at"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-brand-gray hover:text-brand-dark-gray transition-colors"
+              >
+                <Globe size={13} />
+                www.alufefa.at
+              </a>
+              <UserButton />
+            </>
           ) : (
             <>
               <SignInButton mode="modal">
-                <button className="text-sm font-bold text-white/70 hover:text-white transition-colors px-4 py-2">
+                <button className="text-sm font-bold text-brand-gray hover:text-brand-dark-gray transition-colors px-4 py-2">
                   Anmelden
                 </button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <button className="text-sm font-bold bg-brand-blue hover:bg-blue-600 text-white px-4 py-2 transition-colors">
+                <button className="text-sm font-bold bg-brand-blue hover:bg-brand-dark-blue text-white px-4 py-2 transition-colors">
                   Registrieren
                 </button>
               </SignUpButton>
