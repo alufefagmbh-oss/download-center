@@ -5,6 +5,7 @@ import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import type { ActionState } from '@/lib/types'
+import { sendOnboardingNotification } from '@/lib/email'
 
 const OnboardingSchema = z.object({
   name: z.string().min(1, 'Name ist erforderlich'),
@@ -55,6 +56,19 @@ export async function completeOnboarding(
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
   })
+
+  // Benachrichtigungs-E-Mail versenden (Fehler werden ignoriert)
+  const clerkInstance = await clerkClient()
+  const user = await clerkInstance.users.getUser(userId)
+  const email = user.emailAddresses[0]?.emailAddress ?? ''
+  sendOnboardingNotification({
+    name: result.data.name,
+    firma: result.data.firma,
+    position: result.data.position,
+    uid: result.data.uid,
+    telefon: result.data.telefon,
+    email,
+  }).catch(() => {})
 
   redirect('/')
 }

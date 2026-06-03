@@ -111,3 +111,21 @@ export async function deleteProduct(id: string, manufacturerId: string): Promise
   revalidatePath(`/admin/manufacturers/${manufacturerId}`)
   redirect(`/admin/manufacturers/${manufacturerId}`)
 }
+
+export async function moveProduct(
+  productId: string,
+  newManufacturerId: string
+): Promise<ActionState> {
+  await requireAdmin()
+
+  const { error } = await supabaseAdmin
+    .from('product_types')
+    .update({ manufacturer_id: newManufacturerId })
+    .eq('id', productId)
+
+  if (error) return { message: 'Fehler beim Verschieben: ' + error.message }
+
+  revalidatePath('/')
+  revalidatePath('/admin/products')
+  return { success: true }
+}
