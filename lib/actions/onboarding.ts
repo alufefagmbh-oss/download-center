@@ -5,7 +5,8 @@ import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import type { ActionState } from '@/lib/types'
-import { sendOnboardingNotification } from '@/lib/email'
+import { sendOnboardingNotification, parseEmails } from '@/lib/email'
+import { supabaseAdmin } from '@/lib/supabase'
 
 const OnboardingSchema = z.object({
   name: z.string().min(1, 'Name ist erforderlich'),
@@ -57,18 +58,29 @@ export async function completeOnboarding(
     secure: process.env.NODE_ENV === 'production',
   })
 
-  // Benachrichtigungs-E-Mail versenden (Fehler werden ignoriert)
-  const clerkInstance = await clerkClient()
-  const user = await clerkInstance.users.getUser(userId)
-  const email = user.emailAddresses[0]?.emailAddress ?? ''
-  sendOnboardingNotification({
-    name: result.data.name,
-    firma: result.data.firma,
-    position: result.data.position,
-    uid: result.data.uid,
-    telefon: result.data.telefon,
-    email,
-  }).catch(() => {})
+  // Benachrichtigungs-E-Mails versenden (Fehler werden ignoriert)
+  ;(async () => {
+    try {
+      const [userResult, settingResult] = await Promise.all([
+        client.users.getUser(userId),
+        supabaseAdmin.from('settings').select('value').eq('key', 'notification_email').maybeSingle(),
+      ])
+      const email = userResult.emailAddresses[0]?.emailAddress ?? ''
+      const recipients = parseEmails(settingResult.data?.value ?? '')
+      if (recipients.length) {
+        await sendOnboardingNotification(recipients, {
+          name: result.data.name,
+          firma: result.data.firma,
+          position: result.data.position,
+          uid: result.data.uid,
+          telefon: result.data.telefon,
+          email,
+        })
+      }
+    } catch {
+      // Fehler beim E-Mail-Versand dürfen das Onboarding nicht blockieren
+    }
+  })()
 
   redirect('/')
 }

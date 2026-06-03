@@ -1,11 +1,11 @@
 'use client'
 import { useActionState, useState } from 'react'
 import Image from 'next/image'
-import { CheckCircle, AlertCircle, ImageIcon } from 'lucide-react'
+import { CheckCircle, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { UploadButton } from '@/lib/uploadthing'
+import { UploadZone } from '@/components/admin/upload-zone'
 import { MANUFACTURER_CATEGORIES } from '@/lib/types'
 import type { ActionState, Manufacturer } from '@/lib/types'
 
@@ -98,21 +98,12 @@ export function ManufacturerForm({
             </Button>
           </div>
         ) : (
-          <div className="border-2 border-dashed border-brand-light-gray p-6 text-center bg-gray-50">
-            <ImageIcon className="mx-auto mb-2 text-brand-light-gray" size={32} />
-            <p className="text-sm text-brand-gray mb-3">
-              Bild hochladen (max. 4 MB, JPG/PNG/WebP)
-            </p>
-            <UploadButton
-              endpoint="imageUploader"
-              onClientUploadComplete={(res) => {
-                if (res[0]) setImageUrl(res[0].ufsUrl ?? res[0].url)
-              }}
-              onUploadError={(err) => {
-                console.error('Upload error:', err)
-              }}
-            />
-          </div>
+          <UploadZone
+            endpoint="imageUploader"
+            onUploadComplete={({ url }) => setImageUrl(url)}
+            label="Bild hochladen"
+            hint="JPG, PNG, WebP · max. 4 MB"
+          />
         )}
       </div>
 

@@ -17,17 +17,17 @@ export function SettingsForm({ defaultValues }: Props) {
     <form action={action} className="space-y-4">
       <div>
         <label className="block text-sm font-bold text-brand-dark-gray mb-1.5">
-          Benachrichtigungs-E-Mail
+          Benachrichtigungs-E-Mails
         </label>
-        <input
-          type="email"
+        <textarea
           name="notification_email"
           defaultValue={defaultValues.notification_email ?? ''}
-          placeholder="admin@beispiel.at"
-          className="w-full border border-brand-light-gray px-3 py-2 text-sm focus:outline-none focus:border-brand-blue"
+          placeholder={'admin@beispiel.at\ninfo@beispiel.at'}
+          rows={4}
+          className="w-full border border-brand-light-gray px-3 py-2 text-sm focus:outline-none focus:border-brand-blue resize-none font-mono"
         />
         <p className="text-xs text-brand-gray mt-1">
-          An diese Adresse wird bei jedem neuen Onboarding eine Mail gesendet.
+          Eine E-Mail-Adresse pro Zeile. Bei jedem neuen Onboarding wird an alle eingetragenen Adressen eine Benachrichtigung gesendet.
         </p>
       </div>
 

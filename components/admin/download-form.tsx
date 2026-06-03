@@ -4,8 +4,7 @@ import { CheckCircle, AlertCircle, FileIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { UploadButton } from '@/lib/uploadthing'
-import { formatFileSize, getFileType } from '@/lib/utils'
+import { UploadZone } from '@/components/admin/upload-zone'
 import type { ActionState, Download } from '@/lib/types'
 
 interface DownloadFormProps {
@@ -79,25 +78,17 @@ export function DownloadForm({
             </Button>
           </div>
         ) : (
-          <div className="border-2 border-dashed border-brand-light-gray p-6 text-center bg-gray-50">
-            <FileIcon className="mx-auto mb-2 text-brand-light-gray" size={32} />
-            <p className="text-sm text-brand-gray mb-3">
-              PDF, CAD, ZIP, DXF und weitere (max. 64 MB)
-            </p>
-            <UploadButton
-              endpoint="fileUploader"
-              onClientUploadComplete={(res) => {
-                if (res[0]) {
-                  const file = res[0]
-                  setFileUrl(file.ufsUrl ?? file.url)
-                  setFileType(getFileType(file.type, file.name))
-                  setFileSize(formatFileSize(file.size))
-                  setFileName(file.name)
-                }
-              }}
-              onUploadError={(err) => console.error(err)}
-            />
-          </div>
+          <UploadZone
+            endpoint="fileUploader"
+            onUploadComplete={({ url, name, size, fileType }) => {
+              setFileUrl(url)
+              setFileName(name)
+              setFileSize(size)
+              setFileType(fileType)
+            }}
+            label="Datei hochladen"
+            hint="PDF, CAD, ZIP, DXF und weitere · max. 64 MB"
+          />
         )}
         {state?.errors?.file_url && (
           <p className="mt-1 text-xs text-red-600">{state.errors.file_url[0]}</p>
