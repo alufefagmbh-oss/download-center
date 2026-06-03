@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
-import { Globe } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 export async function Header() {
   const { userId } = await auth()
@@ -18,7 +18,7 @@ export async function Header() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 shrink-0">
-          <div className="relative h-9 w-36">
+          <div className="relative h-11 w-44">
             <Image
               src="/images/Downloads.png"
               alt="ALUFEFA"
@@ -44,12 +44,10 @@ export async function Header() {
             <>
               <a
                 href="https://www.alufefa.at"
-                target="_blank"
-                rel="noopener noreferrer"
                 className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-brand-gray hover:text-brand-dark-gray transition-colors"
               >
-                <Globe size={13} />
-                www.alufefa.at
+                <ArrowLeft size={13} />
+                Zurück
               </a>
               <UserButton />
             </>
