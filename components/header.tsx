@@ -27,9 +27,6 @@ export async function Header() {
               priority
             />
           </div>
-          <span className="hidden sm:inline text-[0.7rem] font-bold tracking-[0.18em] uppercase text-brand-gray leading-none border-l border-brand-light-gray pl-3">
-            Downloadcenter
-          </span>
         </Link>
 
         {/* Right */}

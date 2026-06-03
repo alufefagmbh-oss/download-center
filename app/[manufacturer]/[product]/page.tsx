@@ -48,17 +48,17 @@ export default async function ProductPage({ params }: PageProps) {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative h-56 sm:h-64 bg-brand-blue overflow-hidden">
+        <section className="relative h-56 sm:h-64 bg-brand-dark-gray overflow-hidden">
           {product.image_url && (
             <Image
               src={product.image_url}
               alt={product.name}
               fill
-              className="object-cover opacity-60"
+              className="object-cover"
               priority
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-dark-blue/90 to-brand-dark-blue/40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 to-black/30" />
           <div className="absolute inset-0 max-w-7xl mx-auto px-6 flex flex-col justify-end pb-8">
             {/* Breadcrumb */}
             <div className="flex items-center gap-1.5 text-white/40 text-xs mb-3">
