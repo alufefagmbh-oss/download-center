@@ -21,6 +21,8 @@ export interface ProductType {
 export interface Download {
   id: string
   product_type_id: string
+  group_id: string | null
+  sort_order: number
   name: string
   file_url: string
   original_filename: string
@@ -29,6 +31,25 @@ export interface Download {
   version: string
   created_at: string
   product_type?: ProductType
+}
+
+export interface DownloadSection {
+  id: string
+  product_type_id: string
+  name: string
+  sort_order: number
+  created_at: string
+  groups?: DownloadGroup[]
+}
+
+export interface DownloadGroup {
+  id: string
+  product_type_id: string
+  section_id: string | null
+  name: string
+  sort_order: number
+  created_at: string
+  downloads?: Download[]
 }
 
 export interface DownloadLog {

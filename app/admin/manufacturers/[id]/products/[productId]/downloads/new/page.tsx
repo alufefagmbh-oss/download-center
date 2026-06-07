@@ -7,10 +7,12 @@ import { createDownload } from '@/lib/actions/downloads'
 
 interface PageProps {
   params: Promise<{ id: string; productId: string }>
+  searchParams: Promise<{ groupId?: string }>
 }
 
-export default async function NewDownloadPage({ params }: PageProps) {
+export default async function NewDownloadPage({ params, searchParams }: PageProps) {
   const { id: manufacturerId, productId } = await params
+  const { groupId } = await searchParams
 
   const { data: product } = await supabaseAdmin
     .from('product_types')
@@ -22,7 +24,19 @@ export default async function NewDownloadPage({ params }: PageProps) {
 
   const manufacturerRaw = product.manufacturer as unknown
   const manufacturer = (Array.isArray(manufacturerRaw) ? manufacturerRaw[0] : manufacturerRaw) as { name: string } | null
-  const action = createDownload.bind(null, productId, manufacturerId)
+
+  // If groupId provided, look up the group name for display
+  let groupName: string | null = null
+  if (groupId) {
+    const { data: group } = await supabaseAdmin
+      .from('download_groups')
+      .select('name')
+      .eq('id', groupId)
+      .single()
+    groupName = group?.name ?? null
+  }
+
+  const action = createDownload.bind(null, productId, manufacturerId, groupId ?? null)
 
   return (
     <main className="p-8">
@@ -37,6 +51,7 @@ export default async function NewDownloadPage({ params }: PageProps) {
       <p className="text-brand-gray mb-8">
         Produkt: <strong>{product.name}</strong>
         {manufacturer && <> · Hersteller: <strong>{manufacturer.name}</strong></>}
+        {groupName && <> · Gruppe: <strong>{groupName}</strong></>}
       </p>
 
       <div className="bg-white border border-brand-light-gray p-8">

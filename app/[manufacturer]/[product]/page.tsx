@@ -5,13 +5,18 @@ import { ChevronRight } from 'lucide-react'
 import { auth } from '@clerk/nextjs/server'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { DownloadCatalog } from '@/components/download-catalog'
+import { GroupedDownloadCatalog } from '@/components/grouped-download-catalog'
 import { supabase } from '@/lib/supabase'
+import type { DownloadSection, DownloadGroup, Download } from '@/lib/types'
 
 export const revalidate = 60
 
 interface PageProps {
   params: Promise<{ manufacturer: string; product: string }>
+}
+
+function sortByOrder<T extends { sort_order?: number }>(arr: T[] | null): T[] {
+  return (arr ?? []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
 }
 
 export default async function ProductPage({ params }: PageProps) {
@@ -34,11 +39,47 @@ export default async function ProductPage({ params }: PageProps) {
 
   if (!product) notFound()
 
-  const { data: downloads } = await supabase
+  // Sections with nested groups and downloads
+  const { data: sectionsRaw } = await supabase
+    .from('download_sections')
+    .select('*, download_groups(*, downloads(*))')
+    .eq('product_type_id', product.id)
+    .order('sort_order')
+
+  // Loose groups (no section)
+  const { data: looseGroupsRaw } = await supabase
+    .from('download_groups')
+    .select('*, downloads(*)')
+    .eq('product_type_id', product.id)
+    .is('section_id', null)
+    .order('sort_order')
+
+  // Standalone downloads (no group)
+  const { data: standaloneRaw } = await supabase
     .from('downloads')
     .select('*')
     .eq('product_type_id', product.id)
-    .order('name')
+    .is('group_id', null)
+    .order('sort_order')
+
+  const sections = sortByOrder(sectionsRaw ?? []).map(
+    (s: DownloadSection & { download_groups?: (DownloadGroup & { downloads?: Download[] })[] }) => ({
+      ...s,
+      groups: sortByOrder(s.download_groups ?? []).map((g) => ({
+        ...g,
+        downloads: sortByOrder(g.downloads ?? []),
+      })),
+    })
+  )
+
+  const looseGroups = sortByOrder(looseGroupsRaw ?? []).map(
+    (g: DownloadGroup & { downloads?: Download[] }) => ({
+      ...g,
+      downloads: sortByOrder(g.downloads ?? []),
+    })
+  )
+
+  const standaloneFiles = sortByOrder(standaloneRaw ?? [])
 
   const { userId } = await auth()
 
@@ -60,7 +101,6 @@ export default async function ProductPage({ params }: PageProps) {
           )}
           <div className="absolute inset-0 bg-gradient-to-r from-black/75 to-black/30" />
           <div className="absolute inset-0 max-w-7xl mx-auto px-6 flex flex-col justify-end pb-8">
-            {/* Breadcrumb */}
             <div className="flex items-center gap-1.5 text-white/40 text-xs mb-3">
               <Link href="/" className="hover:text-white/70 transition-colors">Hersteller</Link>
               <ChevronRight size={12} />
@@ -79,7 +119,12 @@ export default async function ProductPage({ params }: PageProps) {
         {/* Downloads */}
         <section className="max-w-7xl mx-auto px-6 py-14">
           <p className="section-label">Downloads</p>
-          <DownloadCatalog downloads={downloads ?? []} isLoggedIn={!!userId} />
+          <GroupedDownloadCatalog
+            sections={sections}
+            looseGroups={looseGroups}
+            standaloneFiles={standaloneFiles}
+            isLoggedIn={!!userId}
+          />
         </section>
       </main>
 

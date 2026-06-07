@@ -23,9 +23,15 @@ async function requireAdmin() {
   if (!isAdmin) redirect('/')
 }
 
+function revalidate(manufacturerId: string, productTypeId: string) {
+  revalidatePath('/')
+  revalidatePath(`/admin/manufacturers/${manufacturerId}/products/${productTypeId}`)
+}
+
 export async function createDownload(
   productTypeId: string,
   manufacturerId: string,
+  groupId: string | null,
   _prev: ActionState | undefined,
   formData: FormData
 ): Promise<ActionState> {
@@ -45,15 +51,32 @@ export async function createDownload(
     return { errors: result.error.flatten().fieldErrors }
   }
 
+  // Get next sort_order within the group (or standalone)
+  const orderQuery = supabaseAdmin
+    .from('downloads')
+    .select('sort_order')
+    .eq('product_type_id', productTypeId)
+    .order('sort_order', { ascending: false })
+    .limit(1)
+
+  if (groupId) {
+    orderQuery.eq('group_id', groupId)
+  } else {
+    orderQuery.is('group_id', null)
+  }
+
+  const { data: last } = await orderQuery.maybeSingle()
+
   const { error } = await supabaseAdmin.from('downloads').insert({
     product_type_id: productTypeId,
+    group_id: groupId,
+    sort_order: (last?.sort_order ?? -1) + 1,
     ...result.data,
   })
 
   if (error) return { message: 'Fehler beim Speichern: ' + error.message }
 
-  revalidatePath('/')
-  revalidatePath(`/admin/manufacturers/${manufacturerId}/products/${productTypeId}`)
+  revalidate(manufacturerId, productTypeId)
   redirect(`/admin/manufacturers/${manufacturerId}/products/${productTypeId}`)
 }
 
@@ -87,8 +110,7 @@ export async function updateDownload(
 
   if (error) return { message: 'Fehler beim Speichern: ' + error.message }
 
-  revalidatePath('/')
-  revalidatePath(`/admin/manufacturers/${manufacturerId}/products/${productTypeId}`)
+  revalidate(manufacturerId, productTypeId)
   return { success: true, message: 'Download gespeichert' }
 }
 
@@ -102,7 +124,24 @@ export async function deleteDownload(
   const { error } = await supabaseAdmin.from('downloads').delete().eq('id', id)
   if (error) return { message: 'Fehler beim Löschen: ' + error.message }
 
-  revalidatePath('/')
-  revalidatePath(`/admin/manufacturers/${manufacturerId}/products/${productTypeId}`)
+  revalidate(manufacturerId, productTypeId)
   redirect(`/admin/manufacturers/${manufacturerId}/products/${productTypeId}`)
+}
+
+export async function reorderDownloads(
+  ids: string[],
+  productTypeId: string,
+  manufacturerId: string
+): Promise<ActionState> {
+  await requireAdmin()
+
+  const results = await Promise.all(
+    ids.map((id, i) =>
+      supabaseAdmin.from('downloads').update({ sort_order: i }).eq('id', id)
+    )
+  )
+
+  if (results.some((r) => r.error)) return { message: 'Fehler beim Sortieren' }
+  revalidate(manufacturerId, productTypeId)
+  return { success: true }
 }

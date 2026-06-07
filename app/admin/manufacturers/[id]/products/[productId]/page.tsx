@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Pencil } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { supabaseAdmin } from '@/lib/supabase'
 import { ProductForm } from '@/components/admin/product-form'
 import { DeleteButton } from '@/components/admin/delete-button'
+import { ProductStructureManager } from '@/components/admin/product-structure-manager'
 import { updateProduct, deleteProduct } from '@/lib/actions/products'
-import { deleteDownload } from '@/lib/actions/downloads'
+import type { DownloadSection, DownloadGroup, Download } from '@/lib/types'
 
 interface PageProps {
   params: Promise<{ id: string; productId: string }>
@@ -29,11 +30,48 @@ export default async function EditProductPage({ params }: PageProps) {
 
   if (!manufacturer || !product) notFound()
 
-  const { data: downloads } = await supabaseAdmin
+  // Fetch sections with their groups and downloads
+  const { data: sectionsRaw } = await supabaseAdmin
+    .from('download_sections')
+    .select('*, download_groups(*, downloads(*))')
+    .eq('product_type_id', productId)
+    .order('sort_order')
+
+  // Fetch loose groups (no section) with their downloads
+  const { data: looseGroupsRaw } = await supabaseAdmin
+    .from('download_groups')
+    .select('*, downloads(*)')
+    .eq('product_type_id', productId)
+    .is('section_id', null)
+    .order('sort_order')
+
+  // Fetch standalone downloads (no group)
+  const { data: standaloneRaw } = await supabaseAdmin
     .from('downloads')
     .select('*')
     .eq('product_type_id', productId)
-    .order('name')
+    .is('group_id', null)
+    .order('sort_order')
+
+  // Normalize nested data (Supabase returns arrays for relations)
+  function sortByOrder<T extends { sort_order?: number }>(arr: T[] | null): T[] {
+    return (arr ?? []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+  }
+
+  const sections = sortByOrder(sectionsRaw ?? []).map((s: DownloadSection & { download_groups?: (DownloadGroup & { downloads?: Download[] })[] }) => ({
+    ...s,
+    groups: sortByOrder(s.download_groups ?? []).map((g) => ({
+      ...g,
+      downloads: sortByOrder(g.downloads ?? []),
+    })),
+  }))
+
+  const looseGroups = sortByOrder(looseGroupsRaw ?? []).map((g: DownloadGroup & { downloads?: Download[] }) => ({
+    ...g,
+    downloads: sortByOrder(g.downloads ?? []),
+  }))
+
+  const standaloneFiles = sortByOrder(standaloneRaw ?? [])
 
   const updateAction = updateProduct.bind(null, productId, manufacturerId)
 
@@ -72,66 +110,15 @@ export default async function EditProductPage({ params }: PageProps) {
           </div>
         </section>
 
-        {/* Downloads */}
+        {/* Structure Manager */}
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-lg font-bold text-brand-dark-gray">Downloads</h2>
-              <p className="text-sm text-brand-gray">{downloads?.length ?? 0} Datei(en)</p>
-            </div>
-            <Link
-              href={`/admin/manufacturers/${manufacturerId}/products/${productId}/downloads/new`}
-              className="flex items-center gap-1.5 bg-brand-blue text-white px-4 py-2 font-bold hover:bg-brand-dark-blue transition-colors text-sm"
-            >
-              <Plus size={14} /> Neuer Download
-            </Link>
-          </div>
-
-          {!downloads || downloads.length === 0 ? (
-            <div className="bg-white border border-brand-light-gray text-center py-12">
-              <p className="text-brand-gray text-sm mb-3">Noch keine Downloads vorhanden.</p>
-              <Link
-                href={`/admin/manufacturers/${manufacturerId}/products/${productId}/downloads/new`}
-                className="text-brand-blue font-bold text-sm hover:underline"
-              >
-                Ersten Download hinzufügen →
-              </Link>
-            </div>
-          ) : (
-            <div className="bg-white border border-brand-light-gray overflow-hidden">
-              {downloads.map((dl, i) => (
-                <div
-                  key={dl.id}
-                  className={`px-5 py-4 ${i > 0 ? 'border-t border-brand-light-gray' : ''} hover:bg-gray-50`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-brand-dark-gray truncate">{dl.name}</p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="inline-block bg-brand-light-gray text-brand-dark-gray px-2 py-0.5 text-xs font-bold">
-                          {dl.file_type}
-                        </span>
-                        <span className="text-xs text-brand-gray">{dl.file_size}</span>
-                        <span className="text-xs text-brand-gray">v{dl.version}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <Link
-                        href={`/admin/manufacturers/${manufacturerId}/products/${productId}/downloads/${dl.id}`}
-                        className="inline-flex items-center gap-1 text-xs text-brand-blue hover:text-brand-dark-blue font-bold"
-                      >
-                        <Pencil size={12} /> Bearbeiten
-                      </Link>
-                      <DeleteButton
-                        action={deleteDownload.bind(null, dl.id, productId, manufacturerId)}
-                        label="Löschen"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <ProductStructureManager
+            sections={sections}
+            looseGroups={looseGroups}
+            standaloneFiles={standaloneFiles}
+            productTypeId={productId}
+            manufacturerId={manufacturerId}
+          />
         </section>
       </div>
     </main>
