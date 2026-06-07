@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -6,6 +7,7 @@ import { auth } from '@clerk/nextjs/server'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { GroupedDownloadCatalog } from '@/components/grouped-download-catalog'
+import { DownloadCatalogSkeleton } from '@/components/skeletons'
 import { supabase } from '@/lib/supabase'
 import { fetchProductStructure } from '@/lib/fetch-product-structure'
 
@@ -15,9 +17,32 @@ interface PageProps {
   params: Promise<{ manufacturer: string; product: string }>
 }
 
+// Downloads streamen rein — Hero ist schon sichtbar
+async function DownloadSection({ productId, manufacturerSlug, manufacturerName, productName }: {
+  productId: string
+  manufacturerSlug: string
+  manufacturerName: string
+  productName: string
+}) {
+  const [{ sections, looseGroups, standaloneFiles }, { userId }] = await Promise.all([
+    fetchProductStructure(supabase, productId),
+    auth(),
+  ])
+
+  return (
+    <GroupedDownloadCatalog
+      sections={sections}
+      looseGroups={looseGroups}
+      standaloneFiles={standaloneFiles}
+      isLoggedIn={!!userId}
+    />
+  )
+}
+
 export default async function ProductPage({ params }: PageProps) {
   const { manufacturer: manufacturerSlug, product: productSlug } = await params
 
+  // Beide Queries parallel starten wo möglich
   const { data: manufacturer } = await supabase
     .from('manufacturers')
     .select('*')
@@ -35,16 +60,12 @@ export default async function ProductPage({ params }: PageProps) {
 
   if (!product) notFound()
 
-  const { sections, looseGroups, standaloneFiles } = await fetchProductStructure(supabase, product.id)
-
-  const { userId } = await auth()
-
   return (
     <div className="page-shell">
       <Header />
 
       <main className="flex-1">
-        {/* Hero */}
+        {/* Hero — rendert sofort */}
         <section className="relative h-56 sm:h-64 bg-brand-dark-gray overflow-hidden">
           {product.image_url && (
             <Image
@@ -72,15 +93,17 @@ export default async function ProductPage({ params }: PageProps) {
           </div>
         </section>
 
-        {/* Downloads */}
+        {/* Downloads streamen rein */}
         <section className="max-w-7xl mx-auto px-6 py-14">
           <p className="section-label">Downloads</p>
-          <GroupedDownloadCatalog
-            sections={sections}
-            looseGroups={looseGroups}
-            standaloneFiles={standaloneFiles}
-            isLoggedIn={!!userId}
-          />
+          <Suspense fallback={<DownloadCatalogSkeleton />}>
+            <DownloadSection
+              productId={product.id}
+              manufacturerSlug={manufacturerSlug}
+              manufacturerName={manufacturer.name}
+              productName={product.name}
+            />
+          </Suspense>
         </section>
       </main>
 
