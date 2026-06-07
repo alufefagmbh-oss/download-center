@@ -22,6 +22,7 @@ export interface Download {
   id: string
   product_type_id: string
   group_id: string | null
+  section_id: string | null
   sort_order: number
   name: string
   file_url: string

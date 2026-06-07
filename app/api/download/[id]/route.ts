@@ -52,6 +52,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const forceDownload = req.nextUrl.searchParams.get('download') === '1'
   const { userId } = await auth()
   if (!userId) {
     return NextResponse.redirect(new URL('/sign-in', req.url))
@@ -105,9 +106,10 @@ export async function GET(
   )
 
   const isPdf = download.file_type?.toUpperCase() === 'PDF'
-  const disposition = isPdf
-    ? `inline; filename*=UTF-8''${encodeURIComponent(filename)}`
-    : `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`
+  const disposition =
+    isPdf && !forceDownload
+      ? `inline; filename*=UTF-8''${encodeURIComponent(filename)}`
+      : `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`
 
   return new NextResponse(fileRes.body, {
     headers: {

@@ -7,12 +7,12 @@ import { createDownload } from '@/lib/actions/downloads'
 
 interface PageProps {
   params: Promise<{ id: string; productId: string }>
-  searchParams: Promise<{ groupId?: string }>
+  searchParams: Promise<{ groupId?: string; sectionId?: string }>
 }
 
 export default async function NewDownloadPage({ params, searchParams }: PageProps) {
   const { id: manufacturerId, productId } = await params
-  const { groupId } = await searchParams
+  const { groupId, sectionId } = await searchParams
 
   const { data: product } = await supabaseAdmin
     .from('product_types')
@@ -25,18 +25,16 @@ export default async function NewDownloadPage({ params, searchParams }: PageProp
   const manufacturerRaw = product.manufacturer as unknown
   const manufacturer = (Array.isArray(manufacturerRaw) ? manufacturerRaw[0] : manufacturerRaw) as { name: string } | null
 
-  // If groupId provided, look up the group name for display
-  let groupName: string | null = null
+  let contextLabel: string | null = null
   if (groupId) {
-    const { data: group } = await supabaseAdmin
-      .from('download_groups')
-      .select('name')
-      .eq('id', groupId)
-      .single()
-    groupName = group?.name ?? null
+    const { data: group } = await supabaseAdmin.from('download_groups').select('name').eq('id', groupId).single()
+    if (group) contextLabel = `Gruppe: ${group.name}`
+  } else if (sectionId) {
+    const { data: section } = await supabaseAdmin.from('download_sections').select('name').eq('id', sectionId).single()
+    if (section) contextLabel = `Bereich: ${section.name}`
   }
 
-  const action = createDownload.bind(null, productId, manufacturerId, groupId ?? null)
+  const action = createDownload.bind(null, productId, manufacturerId, groupId ?? null, sectionId ?? null)
 
   return (
     <main className="p-8">
@@ -51,7 +49,7 @@ export default async function NewDownloadPage({ params, searchParams }: PageProp
       <p className="text-brand-gray mb-8">
         Produkt: <strong>{product.name}</strong>
         {manufacturer && <> · Hersteller: <strong>{manufacturer.name}</strong></>}
-        {groupName && <> · Gruppe: <strong>{groupName}</strong></>}
+        {contextLabel && <> · <strong>{contextLabel}</strong></>}
       </p>
 
       <div className="bg-white border border-brand-light-gray p-8">

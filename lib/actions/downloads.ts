@@ -32,6 +32,7 @@ export async function createDownload(
   productTypeId: string,
   manufacturerId: string,
   groupId: string | null,
+  sectionId: string | null,
   _prev: ActionState | undefined,
   formData: FormData
 ): Promise<ActionState> {
@@ -51,7 +52,7 @@ export async function createDownload(
     return { errors: result.error.flatten().fieldErrors }
   }
 
-  // Get next sort_order within the group (or standalone)
+  // Get next sort_order within the target container
   const orderQuery = supabaseAdmin
     .from('downloads')
     .select('sort_order')
@@ -61,8 +62,10 @@ export async function createDownload(
 
   if (groupId) {
     orderQuery.eq('group_id', groupId)
+  } else if (sectionId) {
+    orderQuery.eq('section_id', sectionId).is('group_id', null)
   } else {
-    orderQuery.is('group_id', null)
+    orderQuery.is('group_id', null).is('section_id', null)
   }
 
   const { data: last } = await orderQuery.maybeSingle()
@@ -70,6 +73,7 @@ export async function createDownload(
   const { error } = await supabaseAdmin.from('downloads').insert({
     product_type_id: productTypeId,
     group_id: groupId,
+    section_id: groupId ? null : sectionId,
     sort_order: (last?.sort_order ?? -1) + 1,
     ...result.data,
   })

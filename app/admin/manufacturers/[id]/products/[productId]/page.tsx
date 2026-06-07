@@ -6,7 +6,7 @@ import { ProductForm } from '@/components/admin/product-form'
 import { DeleteButton } from '@/components/admin/delete-button'
 import { ProductStructureManager } from '@/components/admin/product-structure-manager'
 import { updateProduct, deleteProduct } from '@/lib/actions/products'
-import type { DownloadSection, DownloadGroup, Download } from '@/lib/types'
+import { fetchProductStructure } from '@/lib/fetch-product-structure'
 
 interface PageProps {
   params: Promise<{ id: string; productId: string }>
@@ -30,48 +30,7 @@ export default async function EditProductPage({ params }: PageProps) {
 
   if (!manufacturer || !product) notFound()
 
-  // Fetch sections with their groups and downloads
-  const { data: sectionsRaw } = await supabaseAdmin
-    .from('download_sections')
-    .select('*, download_groups(*, downloads(*))')
-    .eq('product_type_id', productId)
-    .order('sort_order')
-
-  // Fetch loose groups (no section) with their downloads
-  const { data: looseGroupsRaw } = await supabaseAdmin
-    .from('download_groups')
-    .select('*, downloads(*)')
-    .eq('product_type_id', productId)
-    .is('section_id', null)
-    .order('sort_order')
-
-  // Fetch standalone downloads (no group)
-  const { data: standaloneRaw } = await supabaseAdmin
-    .from('downloads')
-    .select('*')
-    .eq('product_type_id', productId)
-    .is('group_id', null)
-    .order('sort_order')
-
-  // Normalize nested data (Supabase returns arrays for relations)
-  function sortByOrder<T extends { sort_order?: number }>(arr: T[] | null): T[] {
-    return (arr ?? []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-  }
-
-  const sections = sortByOrder(sectionsRaw ?? []).map((s: DownloadSection & { download_groups?: (DownloadGroup & { downloads?: Download[] })[] }) => ({
-    ...s,
-    groups: sortByOrder(s.download_groups ?? []).map((g) => ({
-      ...g,
-      downloads: sortByOrder(g.downloads ?? []),
-    })),
-  }))
-
-  const looseGroups = sortByOrder(looseGroupsRaw ?? []).map((g: DownloadGroup & { downloads?: Download[] }) => ({
-    ...g,
-    downloads: sortByOrder(g.downloads ?? []),
-  }))
-
-  const standaloneFiles = sortByOrder(standaloneRaw ?? [])
+  const { sections, looseGroups, standaloneFiles } = await fetchProductStructure(supabaseAdmin, productId)
 
   const updateAction = updateProduct.bind(null, productId, manufacturerId)
 

@@ -9,36 +9,51 @@ interface GroupWithFiles extends DownloadGroup {
   downloads: DownloadType[]
 }
 
-interface SectionWithGroups extends DownloadSection {
+interface SectionWithContent extends DownloadSection {
   groups: GroupWithFiles[]
+  directFiles: DownloadType[]
 }
 
 interface Props {
-  sections: SectionWithGroups[]
+  sections: SectionWithContent[]
   looseGroups: GroupWithFiles[]
   standaloneFiles: DownloadType[]
   isLoggedIn: boolean
 }
 
-// ── File action button ─────────────────────────────────────────────────────────
+// ── File action — PDF öffnet in neuem Tab UND startet Download ────────────────
 
 function FileAction({ dl, isLoggedIn }: { dl: DownloadType; isLoggedIn: boolean }) {
   if (!isLoggedIn) {
     return <span className="text-xs text-brand-gray/40 italic">Anmeldung nötig</span>
   }
+
   const isPdf = dl.file_type?.toUpperCase() === 'PDF'
+
   if (isPdf) {
+    function handlePdfClick(e: React.MouseEvent) {
+      e.preventDefault()
+      // Neuen Tab öffnen (inline Ansicht)
+      window.open(`/api/download/${dl.id}`, '_blank', 'noopener,noreferrer')
+      // Download auslösen
+      const a = document.createElement('a')
+      a.href = `/api/download/${dl.id}?download=1`
+      a.style.display = 'none'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    }
+
     return (
-      <a
-        href={`/api/download/${dl.id}`}
-        target="_blank"
-        rel="noopener noreferrer"
+      <button
+        onClick={handlePdfClick}
         className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold px-3 py-1.5 transition-colors"
       >
-        <FileText size={11} /> Öffnen
-      </a>
+        <Download size={11} /> Download
+      </button>
     )
   }
+
   return (
     <a
       href={`/api/download/${dl.id}`}
@@ -49,22 +64,31 @@ function FileAction({ dl, isLoggedIn }: { dl: DownloadType; isLoggedIn: boolean 
   )
 }
 
-// ── Download all button (JS-based multi-download) ─────────────────────────────
+// ── Download all (JS multi-download) ─────────────────────────────────────────
 
-function DownloadAllButton({ group, isLoggedIn }: { group: GroupWithFiles; isLoggedIn: boolean }) {
-  if (!isLoggedIn || group.downloads.length === 0) return null
+function DownloadAllButton({ downloads, isLoggedIn }: { downloads: DownloadType[]; isLoggedIn: boolean }) {
+  if (!isLoggedIn || downloads.length === 0) return null
 
   function handleDownloadAll() {
-    group.downloads.forEach((dl, i) => {
+    downloads.forEach((dl, i) => {
       setTimeout(() => {
-        const a = document.createElement('a')
-        a.href = `/api/download/${dl.id}`
-        a.target = '_blank'
-        a.rel = 'noopener noreferrer'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-      }, i * 400)
+        const isPdf = dl.file_type?.toUpperCase() === 'PDF'
+        if (isPdf) {
+          window.open(`/api/download/${dl.id}`, '_blank', 'noopener,noreferrer')
+          const a = document.createElement('a')
+          a.href = `/api/download/${dl.id}?download=1`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+        } else {
+          const a = document.createElement('a')
+          a.href = `/api/download/${dl.id}`
+          a.target = '_blank'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+        }
+      }, i * 500)
     })
   }
 
@@ -78,7 +102,7 @@ function DownloadAllButton({ group, isLoggedIn }: { group: GroupWithFiles; isLog
   )
 }
 
-// ── Files table (inside a group or standalone) ────────────────────────────────
+// ── Files table ───────────────────────────────────────────────────────────────
 
 function FilesTable({ downloads, isLoggedIn }: { downloads: DownloadType[]; isLoggedIn: boolean }) {
   if (downloads.length === 0) return null
@@ -135,15 +159,15 @@ function FilesTable({ downloads, isLoggedIn }: { downloads: DownloadType[]; isLo
   )
 }
 
-// ── Group (collapsible) ───────────────────────────────────────────────────────
+// ── Group (collapsible, with download-all) ────────────────────────────────────
 
 function GroupView({ group, isLoggedIn }: { group: GroupWithFiles; isLoggedIn: boolean }) {
   const [open, setOpen] = useState(false)
 
   return (
     <div className="border border-brand-light-gray">
-      {/* Group header */}
-      <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-brand-surface/60 transition-colors select-none"
+      <div
+        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-brand-surface/60 transition-colors select-none"
         onClick={() => setOpen((o) => !o)}
       >
         <div className="text-brand-gray/50">
@@ -153,11 +177,10 @@ function GroupView({ group, isLoggedIn }: { group: GroupWithFiles; isLoggedIn: b
         <span className="flex-1 font-bold text-brand-dark-gray text-sm">{group.name}</span>
         <span className="text-xs text-brand-gray/50 shrink-0">{group.downloads.length} Datei(en)</span>
         <div onClick={(e) => e.stopPropagation()}>
-          <DownloadAllButton group={group} isLoggedIn={isLoggedIn} />
+          <DownloadAllButton downloads={group.downloads} isLoggedIn={isLoggedIn} />
         </div>
       </div>
 
-      {/* Files */}
       {open && (
         <div className="border-t border-brand-light-gray/60 px-4 py-4">
           <FilesTable downloads={group.downloads} isLoggedIn={isLoggedIn} />
@@ -170,13 +193,37 @@ function GroupView({ group, isLoggedIn }: { group: GroupWithFiles; isLoggedIn: b
   )
 }
 
+// ── Section view ──────────────────────────────────────────────────────────────
+
+function SectionView({ section, isLoggedIn }: { section: SectionWithContent; isLoggedIn: boolean }) {
+  const hasContent = section.groups.length > 0 || section.directFiles.length > 0
+  if (!hasContent) return null
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <Layers size={14} className="text-brand-dark-blue" />
+        <h3 className="text-xs font-bold text-brand-dark-blue uppercase tracking-widest">{section.name}</h3>
+        <div className="flex-1 h-px bg-brand-dark-blue/15" />
+      </div>
+      <div className="space-y-2">
+        {section.groups.map((group) => (
+          <GroupView key={group.id} group={group} isLoggedIn={isLoggedIn} />
+        ))}
+        {section.directFiles.length > 0 && (
+          <div className="border border-brand-light-gray px-4 py-4">
+            <FilesTable downloads={section.directFiles} isLoggedIn={isLoggedIn} />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export function GroupedDownloadCatalog({ sections, looseGroups, standaloneFiles, isLoggedIn }: Props) {
-  const hasContent =
-    sections.length > 0 ||
-    looseGroups.length > 0 ||
-    standaloneFiles.length > 0
+  const hasContent = sections.length > 0 || looseGroups.length > 0 || standaloneFiles.length > 0
 
   if (!hasContent) {
     return (
@@ -198,25 +245,21 @@ export function GroupedDownloadCatalog({ sections, looseGroups, standaloneFiles,
         </div>
       )}
 
+      {/* Allgemeine Dateien — nur wenn vorhanden */}
+      {standaloneFiles.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <FileText size={14} className="text-brand-gray/60" />
+            <h3 className="text-xs font-bold text-brand-gray/70 uppercase tracking-widest">Allgemeine Dateien</h3>
+            <div className="flex-1 h-px bg-brand-light-gray" />
+          </div>
+          <FilesTable downloads={standaloneFiles} isLoggedIn={isLoggedIn} />
+        </div>
+      )}
+
       {/* Bereiche */}
       {sections.map((section) => (
-        <div key={section.id}>
-          <div className="flex items-center gap-2 mb-3">
-            <Layers size={14} className="text-brand-dark-blue" />
-            <h3 className="text-xs font-bold text-brand-dark-blue uppercase tracking-widest">
-              {section.name}
-            </h3>
-            <div className="flex-1 h-px bg-brand-dark-blue/15" />
-          </div>
-          <div className="space-y-2">
-            {section.groups.map((group) => (
-              <GroupView key={group.id} group={group} isLoggedIn={isLoggedIn} />
-            ))}
-            {section.groups.length === 0 && (
-              <p className="text-sm text-brand-gray/50 italic pl-2">Keine Gruppen in diesem Bereich.</p>
-            )}
-          </div>
-        </div>
+        <SectionView key={section.id} section={section} isLoggedIn={isLoggedIn} />
       ))}
 
       {/* Lose Gruppen */}
@@ -225,20 +268,6 @@ export function GroupedDownloadCatalog({ sections, looseGroups, standaloneFiles,
           {looseGroups.map((group) => (
             <GroupView key={group.id} group={group} isLoggedIn={isLoggedIn} />
           ))}
-        </div>
-      )}
-
-      {/* Standalone Dateien */}
-      {standaloneFiles.length > 0 && (
-        <div>
-          {(sections.length > 0 || looseGroups.length > 0) && (
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex-1 h-px bg-brand-light-gray" />
-              <span className="text-xs text-brand-gray/50 uppercase tracking-wider">Weitere Dokumente</span>
-              <div className="flex-1 h-px bg-brand-light-gray" />
-            </div>
-          )}
-          <FilesTable downloads={standaloneFiles} isLoggedIn={isLoggedIn} />
         </div>
       )}
     </div>

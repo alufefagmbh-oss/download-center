@@ -7,16 +7,12 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { GroupedDownloadCatalog } from '@/components/grouped-download-catalog'
 import { supabase } from '@/lib/supabase'
-import type { DownloadSection, DownloadGroup, Download } from '@/lib/types'
+import { fetchProductStructure } from '@/lib/fetch-product-structure'
 
 export const revalidate = 60
 
 interface PageProps {
   params: Promise<{ manufacturer: string; product: string }>
-}
-
-function sortByOrder<T extends { sort_order?: number }>(arr: T[] | null): T[] {
-  return (arr ?? []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
 }
 
 export default async function ProductPage({ params }: PageProps) {
@@ -39,47 +35,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   if (!product) notFound()
 
-  // Sections with nested groups and downloads
-  const { data: sectionsRaw } = await supabase
-    .from('download_sections')
-    .select('*, download_groups(*, downloads(*))')
-    .eq('product_type_id', product.id)
-    .order('sort_order')
-
-  // Loose groups (no section)
-  const { data: looseGroupsRaw } = await supabase
-    .from('download_groups')
-    .select('*, downloads(*)')
-    .eq('product_type_id', product.id)
-    .is('section_id', null)
-    .order('sort_order')
-
-  // Standalone downloads (no group)
-  const { data: standaloneRaw } = await supabase
-    .from('downloads')
-    .select('*')
-    .eq('product_type_id', product.id)
-    .is('group_id', null)
-    .order('sort_order')
-
-  const sections = sortByOrder(sectionsRaw ?? []).map(
-    (s: DownloadSection & { download_groups?: (DownloadGroup & { downloads?: Download[] })[] }) => ({
-      ...s,
-      groups: sortByOrder(s.download_groups ?? []).map((g) => ({
-        ...g,
-        downloads: sortByOrder(g.downloads ?? []),
-      })),
-    })
-  )
-
-  const looseGroups = sortByOrder(looseGroupsRaw ?? []).map(
-    (g: DownloadGroup & { downloads?: Download[] }) => ({
-      ...g,
-      downloads: sortByOrder(g.downloads ?? []),
-    })
-  )
-
-  const standaloneFiles = sortByOrder(standaloneRaw ?? [])
+  const { sections, looseGroups, standaloneFiles } = await fetchProductStructure(supabase, product.id)
 
   const { userId } = await auth()
 
