@@ -64,40 +64,42 @@ function FileAction({ dl, isLoggedIn }: { dl: DownloadType; isLoggedIn: boolean 
   )
 }
 
-// ── Download all (JS multi-download) ─────────────────────────────────────────
+// ── Download all as ZIP ───────────────────────────────────────────────────────
 
 function DownloadAllButton({ downloads, isLoggedIn }: { downloads: DownloadType[]; isLoggedIn: boolean }) {
+  const [loading, setLoading] = useState(false)
   if (!isLoggedIn || downloads.length === 0) return null
 
-  function handleDownloadAll() {
-    downloads.forEach((dl, i) => {
-      setTimeout(() => {
-        const isPdf = dl.file_type?.toUpperCase() === 'PDF'
-        if (isPdf) {
-          window.open(`/api/download/${dl.id}`, '_blank', 'noopener,noreferrer')
-          const a = document.createElement('a')
-          a.href = `/api/download/${dl.id}?download=1`
-          document.body.appendChild(a)
-          a.click()
-          document.body.removeChild(a)
-        } else {
-          const a = document.createElement('a')
-          a.href = `/api/download/${dl.id}`
-          a.target = '_blank'
-          document.body.appendChild(a)
-          a.click()
-          document.body.removeChild(a)
-        }
-      }, i * 500)
-    })
+  async function handleDownloadAll() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/download-zip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: downloads.map((d) => d.id) }),
+      })
+      if (!res.ok) throw new Error('ZIP-Erstellung fehlgeschlagen')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'downloads.zip'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <button
       onClick={handleDownloadAll}
-      className="inline-flex items-center gap-1.5 bg-brand-dark-blue/10 hover:bg-brand-dark-blue hover:text-white text-brand-dark-blue text-xs font-bold px-3 py-1.5 transition-colors"
+      disabled={loading}
+      className="inline-flex items-center gap-1.5 bg-brand-dark-blue/10 hover:bg-brand-dark-blue hover:text-white text-brand-dark-blue text-xs font-bold px-3 py-1.5 transition-colors disabled:opacity-50 disabled:cursor-wait"
     >
-      <Download size={11} /> Alle herunterladen
+      <Download size={11} /> {loading ? 'Wird erstellt…' : 'Alle herunterladen'}
     </button>
   )
 }
@@ -245,16 +247,9 @@ export function GroupedDownloadCatalog({ sections, looseGroups, standaloneFiles,
         </div>
       )}
 
-      {/* Allgemeine Dateien — nur wenn vorhanden */}
+      {/* Allgemeine Dateien — ohne Überschrift */}
       {standaloneFiles.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <FileText size={14} className="text-brand-gray/60" />
-            <h3 className="text-xs font-bold text-brand-gray/70 uppercase tracking-widest">Allgemeine Dateien</h3>
-            <div className="flex-1 h-px bg-brand-light-gray" />
-          </div>
-          <FilesTable downloads={standaloneFiles} isLoggedIn={isLoggedIn} />
-        </div>
+        <FilesTable downloads={standaloneFiles} isLoggedIn={isLoggedIn} />
       )}
 
       {/* Bereiche */}

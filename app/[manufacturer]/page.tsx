@@ -85,7 +85,6 @@ export default async function ManufacturerPage({ params }: PageProps) {
 
         {/* Produkte streamen rein */}
         <section className="max-w-7xl mx-auto px-6 py-14">
-          <p className="section-label">Produktarten</p>
           <Suspense fallback={<ProductGridSkeleton count={6} />}>
             <ProductsGrid manufacturer={manufacturer} />
           </Suspense>

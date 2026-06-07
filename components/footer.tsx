@@ -44,6 +44,37 @@ export function Footer() {
             </a>
           </div>
 
+          {/* Rechtliches */}
+          <div className="flex flex-col gap-2.5">
+            <p className="text-[0.65rem] font-bold tracking-widest uppercase text-brand-gray/60 mb-1">
+              Rechtliches
+            </p>
+            <a
+              href="https://www.alufefa.at/agbs/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-bold text-brand-gray hover:text-brand-dark-gray transition-colors"
+            >
+              AGBs
+            </a>
+            <a
+              href="https://www.alufefa.at/impressum/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-bold text-brand-gray hover:text-brand-dark-gray transition-colors"
+            >
+              Impressum
+            </a>
+            <a
+              href="https://www.alufefa.at/datenschutz/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-bold text-brand-gray hover:text-brand-dark-gray transition-colors"
+            >
+              Datenschutz
+            </a>
+          </div>
+
         </div>
 
         <div className="mt-8 pt-6 border-t border-[#d0d0d0]">
