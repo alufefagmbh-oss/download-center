@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
 import { ArrowLeft } from 'lucide-react'
+import { TrackingNoticeBanner } from '@/components/tracking-notice-banner'
 
 export async function Header() {
   const { userId } = await auth()
@@ -13,6 +14,7 @@ export async function Header() {
   }
 
   return (
+    <>
     <header className="bg-[#f4f4f4] shadow-[0_2px_8px_0_rgba(0,0,0,0.08)] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
@@ -69,5 +71,7 @@ export async function Header() {
 
       </div>
     </header>
+    <TrackingNoticeBanner isLoggedIn={!!userId} />
+    </>
   )
 }
