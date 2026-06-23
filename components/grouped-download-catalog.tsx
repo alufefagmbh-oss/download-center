@@ -49,7 +49,7 @@ function FileAction({ dl, isLoggedIn }: { dl: DownloadType; isLoggedIn: boolean 
         onClick={handlePdfClick}
         className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold px-3 py-1.5 transition-colors"
       >
-        <Download size={11} /> Download
+        <Download size={11} /> Herunterladen
       </button>
     )
   }
@@ -59,7 +59,7 @@ function FileAction({ dl, isLoggedIn }: { dl: DownloadType; isLoggedIn: boolean 
       href={`/api/download/${dl.id}`}
       className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold px-3 py-1.5 transition-colors"
     >
-      <Download size={11} /> Download
+      <Download size={11} /> Herunterladen
     </a>
   )
 }

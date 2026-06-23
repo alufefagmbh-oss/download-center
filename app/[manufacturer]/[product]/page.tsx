@@ -95,7 +95,7 @@ export default async function ProductPage({ params }: PageProps) {
 
         {/* Downloads streamen rein */}
         <section className="max-w-7xl mx-auto px-6 py-14">
-          <p className="section-label">Herunterladen</p>
+          <p className="section-label">Downloads</p>
           <Suspense fallback={<DownloadCatalogSkeleton />}>
             <DownloadSection
               productId={product.id}

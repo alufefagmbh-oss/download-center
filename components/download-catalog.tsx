@@ -33,7 +33,7 @@ function DownloadAction({ dl, isLoggedIn }: { dl: DownloadType; isLoggedIn: bool
       className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-dark-blue text-white text-xs font-bold px-4 py-2 transition-colors"
     >
       <Download size={12} />
-      Download
+      Herunterladen
     </a>
   )
 }
