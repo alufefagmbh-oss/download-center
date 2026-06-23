@@ -75,7 +75,7 @@ export function DownloadCatalog({ downloads, isLoggedIn }: DownloadCatalogProps)
     return (
       <div className="flex flex-col items-center justify-center py-20 text-brand-gray/50">
         <FileText size={36} strokeWidth={1.5} className="mb-3" />
-        <p className="text-sm">Keine Downloads verfügbar.</p>
+        <p className="text-sm">Keine Dateien zum Herunterladen verfügbar.</p>
       </div>
     )
   }

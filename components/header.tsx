@@ -15,11 +15,11 @@ export async function Header() {
   return (
     <>
     <header className="bg-[#f4f4f4] shadow-[0_2px_8px_0_rgba(0,0,0,0.08)] sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3 sm:gap-6">
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 shrink-0">
-          <div className="relative h-11 w-44">
+          <div className="relative h-11 w-32 sm:w-44">
             <Image
               src="/images/Downloads.png"
               alt="ALUFEFA"
@@ -55,12 +55,12 @@ export async function Header() {
           ) : (
             <>
               <SignInButton mode="modal">
-                <button className="text-sm font-bold text-brand-gray hover:text-brand-dark-gray transition-colors px-4 py-2">
+                <button className="text-xs sm:text-sm font-bold text-brand-gray hover:text-brand-dark-gray transition-colors px-2 sm:px-4 py-1.5 sm:py-2">
                   Anmelden
                 </button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <button className="text-sm font-bold bg-brand-blue hover:bg-brand-dark-blue text-white px-4 py-2 transition-colors">
+                <button className="text-xs sm:text-sm font-bold bg-brand-blue hover:bg-brand-dark-blue text-white px-2 sm:px-4 py-1.5 sm:py-2 transition-colors">
                   Registrieren
                 </button>
               </SignUpButton>
